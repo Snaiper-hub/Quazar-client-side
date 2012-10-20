@@ -1,0 +1,497 @@
+html,body{
+	background:#eee;
+	font-family:"Segoe UI Light";
+	color:#000;
+	width: 100%;
+	height: 100%;
+	overflow:hidden;
+	box-sizing:border-box;
+	padding:0;
+	margin:0;
+	-webkit-user-select: none;
+}
+div{	box-sizing:border-box;}
+
+ul{margin:0;padding:0;}
+
+a,a:hover{
+	text-decoration:none;
+	color:#000;
+	cursor:pointer;
+}
+
+input[type="password"], input[type="text"]{
+	display:block;
+	box-sizing:border-box;
+	border:1px #E0E0E0 solid;
+	height:32px;
+	line-height:32px;	
+	padding:0 3px;
+	margin:2px;
+	-webkit-transition:0.2s;
+}
+
+input:hover,textarea:hover{}
+
+input:focus,textarea:focus{
+	border: 1px solid #09C;
+}
+.centredInput{
+	width:200px!important;
+	margin:5px auto!important;
+}
+
+button{
+	display:block;
+	box-sizing:border-box;
+	border:1px #09c solid;
+	background-color:#E0E0E0;
+	height:32px;
+	line-height:32px;
+	padding:0 10px;
+	margin:2px;
+	-webkit-transition:0.2s;
+	border-radius:2px;
+}
+
+button:hover{
+	border:1px #33B5E5 solid;
+	background-color:rgba(0,153,204,0.3);
+}
+
+button:active{}
+
+::-webkit-scrollbar {width:3px;}
+::-webkit-scrollbar-thumb{background:#0099CC;}
+::-webkit-scrollbar-thumb:hover{background:#33B5E5;}
+
+#pageContainer{
+	display:none;
+	width:100%;
+	height:100%;
+	overflow:hidden;
+	color:#292826;
+}
+
+#overlay{
+	width:100%;
+	height:100%;
+	position:fixed;
+	top:0;
+	left:0;
+	z-index:11;
+	background-color:rgba(0,0,0,0.7);
+}
+
+#overlay h3{
+	width:100%;
+	line-height:32px;
+	font-weight:bold;
+	color:#09c;
+	margin:0 0 50px 0;
+	padding:0;
+	border-bottom:2px #09c solid;
+}
+
+#loader{
+	position:absolute;
+	top:-webkit-calc(50% - 50px);
+	left:-webkit-calc(50% - 50px);
+	width:100px;
+	height:100px;
+	padding:10px;
+	border-radius:100px;
+	background:#fff;
+	z-index:100;
+	box-shadow:0px 0px 5px #000;
+	display:none;
+}
+
+#loaderInner{
+	width:100%;
+	height:100%;
+	border-radius: 100px;
+	border-right: 1px #09C solid;
+	border-bottom: 1px #09C solid;
+	border-left: 1px transparent solid;
+	border-top: 1px transparent solid;
+	-webkit-animation:rotate 1s infinite linear;
+}
+
+@-webkit-keyframes rotate
+{
+	from{-webkit-transform: rotate(0deg);}
+	to {-webkit-transform: rotate(360deg);}
+}
+
+#loginPanel,#serverOffline,#registrationPanel{
+	width:400px;
+	height:300px;
+	text-align:center;
+	position:absolute;
+	left:-webkit-calc(50% - 200px);
+	top:-webkit-calc(50% - 150px);
+	background:#FFF;
+	z-index:11;
+	border-radius:2px;
+	display:none;
+}
+
+#signIn,#regSubmit{
+	width:200px;
+	margin:3px auto;
+	cursor:pointer;
+}
+
+#signInStatus,#regStatus{
+	display:none;
+	box-shadow:0 0 3px #aaa inset;
+	padding:5px;
+	margin:5px;
+	-webkit-transition:border 0.2s;
+}
+
+.err{border: 1px #CC0000 solid!important;}
+.warning{border: 1px #FF8800 solid!important;}
+
+#rightColumn{
+	float:left;
+	width:-webkit-calc(100% - 320px);
+	height:-webkit-calc(100% - 34px);
+	overflow:hidden;
+}
+#rightColumnHeader{
+	border-bottom:1px #E0E0E0 solid;
+	overflow:hidden;
+	box-shadow:0px 0 3px rgba(0,0,0,0.3);
+}
+
+#leftColumn{
+	float:left;
+	width:320px;
+	height:-webkit-calc(100% - 34px);
+	overflow:hidden;
+	border-right:1px #E0E0E0 solid;
+}
+#statusBar{
+	height:34px;
+	border-top:2px #09c solid;
+	width:100%;
+	float:left;
+}
+#leftColumnHeader{
+	overflow:hidden;
+}
+
+#userBar{
+	font-size:32px;
+	float: left;
+	margin:5px;
+}
+
+#settingsButton{
+	background-image:url(../img/dots-v.png);
+	background-repeat:no-repeat;
+	background-position:center;
+	width:48px;
+	height:48px;
+	float:right;
+}
+
+.page{
+	display:none;
+	height: 90%;
+	width: 90%;
+	margin:0 auto;
+	background-color:#fff;
+}
+
+#settingsPageContent{
+	height: -webkit-calc(100% - 48px);
+}
+
+#settingsDivisionsList{
+	height:100%;
+	width:200px;
+	float:left;
+	padding:0 3px;
+}
+#settingsDivisionsList li{
+	display:block;
+	box-sizing:border-box;
+	line-height:32px;
+	cursor:pointer;
+	padding:0 5px;
+	margin:2px 0;
+	-webkit-transition:0.2s;
+	outline:1px transparent solid;
+}
+
+/* перевести все визуальные эффекты выделения списков на этот класс в будущем */
+.activeListItem{
+	color:#fff;
+	background-color:#0099CC!important;
+	outline:none!important;
+}
+
+.activeTabItem{
+	color:#000;
+	border-bottom:3px #33B5E5 solid!important;
+	background-color:rgba(0,153,204,0.3)!important;
+}
+
+#settingsDivisionsPages{
+	height:100%;
+	width:-webkit-calc(100% - 200px);
+	float:left;
+}
+
+#settingsPageFooter{
+	overflow:hidden;
+	padding:5px;
+}
+
+#settingsPageFooter button{
+	float:right;
+	margin: 3px;
+}
+
+#channelTabs{
+	height: -webkit-calc(100% - 102px);
+}
+
+.channel:hover{
+	cursor:pointer;
+	background: #786b59;
+}
+
+#friendsTabLink,#channelOnlineTabLink{
+	display: block;
+	float: left;
+	color:#000;
+	box-sizing: border-box;
+	width: -webkit-calc(100% / 2);
+	-webkit-transition: 0.2s;
+	background-color: #E0E0E0;
+	line-height:48px;
+	height:48px;
+	text-align: center;
+	border-bottom:3px #33B5E5 solid;
+}
+
+#friendsTabLink{}
+
+#channelOnlineTabLink{}
+
+#tabs{
+	overflow:hidden;
+	width:400px;
+	height:100%;
+	padding-top: 10px;
+}
+
+#tabsWrapper{
+	width:800px;
+	height:100%;
+}
+/* TODO :Заменить на friends */
+#peopleTab,#channelOnlineTab{
+	float:left;
+	width:50%;
+	height:100%;
+	overflow:hidden;
+}
+
+#peopleTab li{
+	display:block;
+	line-height:32px;
+	cursor:pointer;
+}
+
+#peopleTab ul{
+	display:block;
+	width:50%;
+	height:-webkit-calc(100% - 42px);
+	overflow:hidden;
+}
+
+#channelsRow,#privatesRow{
+	float:left;
+	width:100%;
+	overflow:hidden;
+	overflow-y:scroll;
+	padding:0 0 0 32px;
+}
+#channelsRow{
+	background:url(../img/groups.png) no-repeat center left;
+}
+#privatesRow{
+	background:url(../img/private.png) no-repeat center left;
+}
+
+#channelsRow .channelListItem,#privatesRow .channelListItem{
+	position:relative;
+	display:block;
+	box-sizing:border-box;
+	line-height:32px;
+	cursor:pointer;
+	margin:0;
+	padding:0;
+	background-color: #E0E0E0;
+	border-bottom:3px #33B5E5 solid;
+	-webkit-transition:0.2s;
+	outline:1px transparent solid;
+	width:100px;
+	text-align:center;
+	float:left;
+}
+
+#channelsRow .channelListItem:hover{}
+
+#joinChannelForm{
+	float:left;
+	overflow:hidden;
+}
+
+#joinChannelFormExpander{
+	width:32px;
+	height:32px;
+	line-height:32px;	
+	display:block;
+	float:left;
+	margin:2px;
+	background:url(../img/add-group.png) no-repeat center left;
+	-webkit-transition:0.2s;
+}
+
+#joinChannelField{
+	float:left;
+	width:200px;
+}
+
+#joinChannelSubmit{}
+
+.channelOnlineContainer{
+	display:none;
+}
+
+.channelOnlineContainer div{
+	cursor:pointer;
+	background:url(../img/user.png) no-repeat center left;
+	margin:0 0 0 10px;
+	padding:0 0 0 30px;
+}
+
+#createChannel,#addChannelField{
+	float:left;
+}
+
+.currentChannel .channelLeave{
+	cursor: pointer;
+	width:24px;
+	height:24px;
+	position: absolute;
+	top:5px;
+	right:0;
+	background:url(../img/channel-leave.png) no-repeat;
+}
+.channelLeave:hover{}
+
+#messages{
+	float: left;
+	width: 100%;
+	height:-webkit-calc(100% - 140px);
+}
+
+.channelContainer{
+	display:none;
+}
+
+.currentChannel{}
+.currentChannel{
+	display:block;
+}
+.currentChannel .channelLeave{
+	display:block;
+}
+
+div.currentChannel{
+	width:100%;
+	display:block;
+	overflow-y:scroll;
+	word-wrap: break-word;
+}
+#formContainer{
+	height:100px;
+	width:100%;
+	overflow:hidden;
+}
+#messageField{
+	display:block;
+	float:left;
+	border:none;
+	resize:horizontal;
+	max-width:75%;
+	min-width:50%;
+	border:1px #E0E0E0 solid;
+	-webkit-transition:border 0.2s;
+}
+#messageField:focus{
+	border:1px #09c solid;
+}
+
+#sendMessage{
+	float:left;
+}
+
+.message{
+	float:left;
+	overflow:hidden;
+	width:100%;
+	padding:5px;
+}
+
+.messageInfo{
+	float:left;
+	width:100px;
+	text-align:left;
+}
+
+.messageInfo span{
+	display:block;
+}
+
+.author{
+	font-weight:bold;
+}
+
+.me{
+	color:#0099CC!important;
+}
+
+.messageContent{
+	float:left;
+	width:-webkit-calc(100% - 100px);
+	padding:5px;
+}
+
+#contextmenu{
+	display:none;
+	position:absolute;
+	background-color: white;
+	width: 150px;
+	padding: 3px;
+	font:normal 10px Tahoma;
+	line-height:18px;
+	z-index:1;
+	border:1px solid #8c8c8c;
+	text-align:center;
+	box-shadow:0px 0px 7px #222;
+}
+
+#contextmenu div{
+	float:left;
+	margin:10px;
+	cursor:pointer;
+	font-size:15px;
+}
