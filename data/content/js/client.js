@@ -55,10 +55,8 @@ $(window).on('app-ready',function(){
 	}
 	
 	function saveSetting(settingName,value){
-		var settingsObject = getSettingsObject();
-		settingsObject[settingName] = value;
+		settings[settingName] = value;
 		var string = JSON.stringify(settingsObject);
-		var fs = require('fs');
 		fs.writeFileSync(__dirname+'\\settings.json',string,'utf8');
 	}
 	
