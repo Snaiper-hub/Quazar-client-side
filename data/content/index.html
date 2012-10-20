@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Quazar 2</title>
+		<link rel="stylesheet" href="css/reset.min.css">
+		<link rel="stylesheet" href="css/style.css">
+		<script src="js/jquery-1.8.1.min.js"></script>
+		<script src="js/socket.io.min.js"></script>
+		<script src="js/client.js"></script>
+	</head>
+	<body>
+	<div id="loader"><div id="loaderInner"></div></div>
+	<div id="contextmenu"><div id="openChannels">Каналы</div><div data-action="open" data-page="settings">Настройки</div><div id="logOut">Выйти</div></div>
+		<div id="overlay">
+			<div id="serverOffline">
+				<h3>Сервер недоступен.</h3>
+				Вход будет произведён автоматически, как только это будет возможно.
+			</div>
+			<div id="loginPanel">
+				<h3>Вход</h3>
+				<input id="loginField" class="centredInput" type="text" placeholder="Логин" />
+				<input id="passwordField" class="centredInput" type="password" placeholder="Пароль" />
+				<input id="autoLogin" type="checkbox" name="autoLogin" value=""><span>Запомнить и входить автоматом</span>
+				<button id="signIn">Войти</button>
+				<!-- <a id="passremind">Восстановить</a>  --><a id="registration">Зарегестрироватся</a>
+				<div id="signInStatus"></div>
+			</div>
+			<div id="registrationPanel">
+				<h3>Регистрация</h3>
+				<input id="regLoginField" class="centredInput" type="text" placeholder="Логин" />
+				<input id="regPasswordField" class="centredInput" type="password" placeholder="Пароль" />
+				<input id="regEmailField" class="centredInput" type="text" placeholder="Email" />
+				<button id="regSubmit">Зарегистрироваться</button>
+				<div id="regStatus"></div>
+				<a href="#" id="showLoginPanel" data-action="close">Назад</a>
+			</div>
+			<div id="profile" class="page">
+				Имя: <input id="userName" type="text" placeholder="Имя" />
+				Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
+				Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
+				<button id="avatarSelector">Выбрать аватар</button>
+				<img id="hideAvatar" style="display:none;" src="" />
+				<canvas id="avatar" width="250px" height="300px"></canvas>
+				<button id="profileSave">Сохранить и выйти</button>
+				<button data-action="close">Отмена</button>
+			</div>
+			<div id="channels" class="page">
+				Каналы:
+				<div id="channelsList"></div>
+				<div id="joinChannelForm">
+					<span id="joinChannelFormExpander" title="joinChannelFormExpander" ></span>
+					<input id="addChannelField" type="text" placeholder="Название канала" />
+					<button id="createChannel">Создать</button>
+				</div>
+				<button data-action="close">Отмена</button>
+			</div>
+			<div id="settings" class="page">
+				<div id="settingsPageContent">
+					<div id="settingsDivisionsList">
+						<ul>
+							<li class="activeListItem">Main</li>
+							<li>Main</li>
+							<li>Main</li>
+						</ul>
+					</div>
+					<div id="settingsDivisionsPages">
+						<div class="settingsDivisionPage"></div>
+					</div>
+				</div>
+				<div id="settingsPageFooter">					
+					<button id="settingsSave">Сохранить и выйти</button>
+					<button data-action="close">Отмена</button>
+				</div>				
+			</div>
+		</div>
+		<div id="pageContainer">
+			<div id="leftColumn">
+				<div id="leftColumnHeader"><h1 id="userBar" data-action="open" data-page="profile"></h1><button id="settingsButton"></button></div>
+				<div id="channelTabs">
+					<a href="#" id="friendsTabLink" class="activeTab activeTabItem" title="Друзья">Друзья</a>
+					<a href="#" id="channelOnlineTabLink" title="Кто на канале">На канале</a>
+					<div id="tabs">
+						<div id="tabsWrapper">
+							<div id="peopleTab">
+								friend								
+							</div>
+							<div id="channelOnlineTab"></div>
+						</div>
+					</div>				
+				</div>
+			</div>
+			<div id="rightColumn">
+				<div id="rightColumnHeader">
+					<div id="channelsRow"></div>
+					<div id="privatesRow"><div class="channelListItem">PRIVATE_TEST</div></div>
+				</div>
+				<div id="messages"></div>
+				<div id="formContainer">			
+					<textarea id="messageField" rows="3" placeholder="Текст сообщения..." ></textarea>
+					<button id="sendMessage">Отправить</button>
+				</div>
+			</div>
+			<div id="statusBar"></div>
+		</div>		
+	</body>
+</html>
