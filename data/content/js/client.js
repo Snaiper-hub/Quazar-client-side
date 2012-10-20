@@ -56,8 +56,10 @@ $(window).on('app-ready',function(){
 	}
 	
 	function saveSetting(settingName,value){
-		settings[settingName] = value;
-		var string = JSON.stringify(settings);
+		var settingsObject = getSettingsObject();
+		settingsObject[settingName] = value;
+		var string = JSON.stringify(settingsObject);
+		var fs = require('fs');
 		fs.writeFileSync(__dirname+'\\settings.json',string,'utf8');
 	}
 	
@@ -139,23 +141,22 @@ $(window).on('app-ready',function(){
 			dirSelect:false
 		},function(err,files){
 			if(!err){
-				var file = files[0];
-				var type = mime.lookup(file);
-				var stat = fs.statSync(file);
-				var name = path.basename(file);
-				
-				var img = fs.readFileSync(file).toString('base64');
-					$('#hideAvatar').attr('src',"data:image/png;base64," +img).load(function() {
-							var avatar = document.getElementById("hideAvatar");
-							if($('#hideAvatar').height() < 300 && $('#hideAvatar').width() < 250){
-								var canvas=document.getElementById("avatar");
-								var x=canvas.getContext("2d");
-								x.drawImage(avatar,10,10);
-							} else {alert("Слишком большая");}
-					});
-			} else {
-				console.log('error');
-			}
+			var file = files[0];
+			var type = mime.lookup(file);
+			var stat = fs.statSync(file);
+			var name = path.basename(file);
+			var img = fs.readFileSync(file).toString('base64');
+			$('#hideAvatar').attr('src',"data:image/png;base64," +img).load(function(){
+				var avatar = document.getElementById("hideAvatar");
+				if($('#hideAvatar').height() < 300 && $('#hideAvatar').width() < 250){
+					var canvas=document.getElementById("avatar");
+					var x=canvas.getContext("2d");
+					x.drawImage(avatar,10,10);
+				} else {
+					alert("Слишком большая");
+				}
+			});	
+			} else {console.log('error');}
 		});
 	});
 	
