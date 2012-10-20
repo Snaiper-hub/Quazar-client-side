@@ -49,7 +49,6 @@ $(window).on('app-ready',function(){
 	var settings = getSettingsObject();
 	
 	function getSettingsObject(){
-		var fs = require('fs');
 		var contents = fs.readFileSync(__dirname+'\\settings.json','utf8');
 		var settingsObject = JSON.parse(contents);
 		return settingsObject;
