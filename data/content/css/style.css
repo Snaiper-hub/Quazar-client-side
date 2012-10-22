@@ -237,7 +237,6 @@ button:active{}
 .activeTabItem{
 	color:#000;
 	border-bottom:3px #33B5E5 solid!important;
-	background-color:rgba(0,153,204,0.3)!important;
 }
 
 #settingsDivisionsPages{
