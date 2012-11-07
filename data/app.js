@@ -2,6 +2,29 @@ var app = require('appjs');
 
 app.serveFilesFrom(__dirname + '/content');
 
+var trayMenu = app.createMenu([{
+  label:'Показать',
+  action:function(){
+    window.frame.show();
+  },
+},{
+  label:'Скрыть',
+  action:function(){
+    window.frame.hide();
+  }
+},{
+  label:'Закрыть',
+  action:function(){
+    window.close();
+  }
+}]);
+
+var statusIcon = app.createStatusIcon({
+  icon:'./data/content/icons/16.png',
+  tooltip:'Quazar 2',
+  menu:trayMenu
+});
+
 var window = app.createWindow({
 	width: 800,
 	height: 700,
