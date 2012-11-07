@@ -179,6 +179,7 @@ button:active{}
 	width:-webkit-calc(100% - 320px);
 	height:-webkit-calc(100% - 34px);
 	overflow:hidden;
+	position: relative;
 }
 #rightColumnHeader{
 	border-bottom:1px #E0E0E0 solid;
@@ -427,9 +428,9 @@ button:active{}
 .channelLeave:hover{}
 
 #messages{
-	float: left;
 	width: 100%;
-	height:-webkit-calc(100% - 140px);
+	height: 100%;
+	padding-bottom: 131px;
 }
 
 .channelContainer{
@@ -452,17 +453,26 @@ div.currentChannel{
 	word-wrap: break-word;
 }
 #formContainer{
-	height:100px;
+	position: absolute;
+	bottom: 10px;
 	width:100%;
 	overflow:hidden;
+}
+#textareaResizer{
+	background: #E2E2E2;
+	cursor: s-resize;
+	height: 5px;
+	width: 90%;
+	margin: 0 auto;
+	margin-bottom: 5px;
 }
 #messageField{
 	display:block;
 	float:left;
 	border:none;
-	resize:horizontal;
-	max-width:75%;
-	min-width:50%;
+	resize:none;
+	width:-webkit-calc(100% - 100px);;
+	height:30px;
 	border:1px #E0E0E0 solid;
 	-webkit-transition:border 0.2s;
 }

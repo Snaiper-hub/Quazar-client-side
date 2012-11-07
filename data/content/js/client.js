@@ -14,6 +14,26 @@ $(window).on('app-ready',function(){
 		}
 	});
 	
+	$('body').on("mousedown","#textareaResizer",function(event){
+		var mouseStart = event.pageY;
+		var tH = $('#messageField').height();
+	$('body').mousemove(function(e){
+		var h = tH + (mouseStart-e.pageY);
+		if( h >= 30 && h <= 200 ){
+			$('#messageField').height(h);
+			$('#messages').css("padding-bottom",100+h);
+			 
+			var $el=$('#messages .currentChannel');
+			var height = $el[0].scrollHeight;
+			$el.animate({scrollTop: height + "px"}, 0);
+		}
+	});
+	}).mouseup(function(){
+		$('body').unbind('mousemove');
+    }).mouseleave(function(){
+		$('body').unbind('mousemove');
+	});
+	
 	$(document).on('click', function(e){
 		if ($(e.target).closest('#settingsButton').length != 0){
 			$("#contextmenu").show().css({
