@@ -66,7 +66,7 @@ $(window).on('app-ready',function(){
 /*		Эффекты		*/
 
 	function scroll() {
-		var $el=$('div.currentChannel');
+		var $el=$('#messages .currentChannel');
 		var height = $el[0].scrollHeight;
 		$el.animate({scrollTop: height + "px"}, {queue: false}, 200);
 	}
