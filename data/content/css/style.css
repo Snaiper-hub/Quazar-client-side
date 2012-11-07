@@ -260,10 +260,12 @@ button:active{}
 #channelTabs{
 	height: -webkit-calc(100% - 102px);
 }
-
-.channel:hover{
+.channel{
+	line-height: 32px;
 	cursor:pointer;
-	background: #786b59;
+}
+.channel:hover{
+	background: #33B5E5;
 }
 
 #friendsTabLink,#channelOnlineTabLink{
@@ -326,10 +328,10 @@ button:active{}
 	border-bottom:1px #33B5E5 solid;
 }
 #channelsRow{
-	background:url(../img/groups.png) no-repeat center left;
+	background:url(../img/groups.png) no-repeat center left #E0E0E0;
 }
 #privatesRow{
-	background:url(../img/private.png) no-repeat center left;
+	background:url(../img/private.png) no-repeat center left #E0E0E0;
 }
 
 #channelsRow .channelListItem,#privatesRow .channelListItem{
@@ -482,20 +484,23 @@ div.currentChannel{
 #contextmenu{
 	display:none;
 	position:absolute;
-	background-color: white;
+	background-color: #fff;
 	width: 150px;
-	padding: 3px;
 	font:normal 10px Tahoma;
 	line-height:18px;
 	z-index:1;
-	border:1px solid #8c8c8c;
+	border:1px solid #E0E0E0;
 	text-align:center;
-	box-shadow:0px 0px 7px #222;
+	box-shadow:0px 0px 3px #ccc;
 }
 
 #contextmenu div{
 	float:left;
-	margin:10px;
+	line-height:32px;
+	width:100%;
 	cursor:pointer;
 	font-size:15px;
+}
+#contextmenu div:hover{
+	background-color: #33B5E5;
 }
