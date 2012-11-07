@@ -15,7 +15,7 @@ var trayMenu = app.createMenu([{
 },{
   label:'Закрыть',
   action:function(){
-    window.close();
+    process.exit();
   }
 }]);
 
