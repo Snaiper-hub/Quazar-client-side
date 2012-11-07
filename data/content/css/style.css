@@ -225,6 +225,7 @@ button:active{}
 	margin:2px 0;
 	-webkit-transition:0.2s;
 	outline:1px transparent solid;
+	border-bottom:5px transparent solid;
 }
 
 /* перевести все визуальные эффекты выделения списков на этот класс в будущем */
@@ -236,7 +237,7 @@ button:active{}
 
 .activeTabItem{
 	color:#000;
-	border-bottom:3px #33B5E5 solid!important;
+	border-bottom:5px #33B5E5 solid!important;
 }
 
 #settingsDivisionsPages{
@@ -275,7 +276,7 @@ button:active{}
 	line-height:48px;
 	height:48px;
 	text-align: center;
-	border-bottom:3px #33B5E5 solid;
+	border-bottom:5px transparent solid;
 }
 
 #friendsTabLink{}
@@ -287,6 +288,7 @@ button:active{}
 	width:400px;
 	height:100%;
 	padding-top: 10px;
+	border-top: 1px #33B5E5 solid;
 }
 
 #tabsWrapper{
@@ -320,6 +322,7 @@ button:active{}
 	overflow:hidden;
 	overflow-y:scroll;
 	padding:0 0 0 32px;
+	border-bottom:1px #33B5E5 solid;
 }
 #channelsRow{
 	background:url(../img/groups.png) no-repeat center left;
@@ -337,12 +340,12 @@ button:active{}
 	margin:0;
 	padding:0;
 	background-color: #E0E0E0;
-	border-bottom:3px #33B5E5 solid;
 	-webkit-transition:0.2s;
 	outline:1px transparent solid;
 	width:100px;
 	text-align:center;
 	float:left;
+	border-bottom:5px transparent solid;
 }
 
 #channelsRow .channelListItem:hover{}
