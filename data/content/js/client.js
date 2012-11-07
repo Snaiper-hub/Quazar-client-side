@@ -301,6 +301,13 @@ $(window).on('app-ready',function(){
 			page.fadeOut();
 		});
 	});
+	function settingsListClick(){
+		var index = $('#settingsDivisionsList li').index(this);
+		var width = $('.settingsDivisionPage').first().width();
+		$('#settingsDivisionsList .activeTabItem').removeClass('activeTabItem');
+		$(this).addClass('activeTabItem');
+		$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false},300);
+	}
 	
 /*			Действия - Конец			*/	
 
@@ -416,6 +423,7 @@ $(window).on('app-ready',function(){
 	socket.on('loginProcedureFinish',onLoginFinish);
 	socket.on('allChannels',openChannelsList);
 	$('#profileSave').click(saveProfileInfo);
+	$('#settingsDivisionsList li').click(settingsListClick);
 	$('#openChannels').click(getChannels);
 	$('#sendMessage').click(submitMessage);
 	$('#messageField').keypress(function(e){if(e.which===13){submitMessage();return false;}});

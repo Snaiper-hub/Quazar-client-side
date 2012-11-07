@@ -54,25 +54,27 @@
 					<button id="createChannel">Создать</button>
 				</div>
 				<div id="channelsList"></div>
-				<button data-action="close">Отмена</button>
+				<div class="genericFooter">
+					<button data-action="close">Отмена</button>
+				</div>
 			</div>
 			<div id="settings" class="page">
 				<div class="genericPageHeader">Настройки</div>
 				<div id="settingsPageContent">
-					<div id="settingsDivisionsList">
-						<ul>
+						<ul id="settingsDivisionsList">
 							<li class="activeTabItem">Main</li>
 							<li>View</li>
 							<li>Network</li>
 						</ul>
-					</div>
 					<div id="settingsDivisionsPages">
-						<div class="settingsDivisionPage">1 Main</div>
-						<div class="settingsDivisionPage">2 View</div>
-						<div class="settingsDivisionPage">3 Network</div>
+						<div id="settingsDivisionsPagesWrapper">
+							<div class="settingsDivisionPage">1 Main</div>
+							<div class="settingsDivisionPage">2 View</div>
+							<div class="settingsDivisionPage">3 Network</div>
+						</div>
 					</div>
 				</div>
-				<div id="settingsPageFooter">					
+				<div class="genericFooter">
 					<button id="settingsSave">Сохранить и выйти</button>
 					<button data-action="close">Отмена</button>
 				</div>				
@@ -87,7 +89,7 @@
 					<div id="tabs">
 						<div id="tabsWrapper">
 							<div id="peopleTab">
-								friend								
+								<span>friend</span>								
 							</div>
 							<div id="channelOnlineTab"></div>
 						</div>
