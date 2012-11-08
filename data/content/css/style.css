@@ -267,7 +267,7 @@ button:active{}
 	position: relative;
 }
 
-/* перевести все визуальные эффекты выделения списков на этот класс в будущем */
+/* РїРµСЂРµРІРµСЃС‚Рё РІСЃРµ РІРёР·СѓР°Р»СЊРЅС‹Рµ СЌС„С„РµРєС‚С‹ РІС‹РґРµР»РµРЅРёСЏ СЃРїРёСЃРєРѕРІ РЅР° СЌС‚РѕС‚ РєР»Р°СЃСЃ РІ Р±СѓРґСѓС‰РµРј */
 .activeListItem{
 	color:#fff;
 	background-color:#0099CC!important;
@@ -334,7 +334,7 @@ button:active{}
 	width:800px;
 	height:100%;
 }
-/* TODO :Заменить на friends */
+/* TODO :Р—Р°РјРµРЅРёС‚СЊ РЅР° friends */
 #peopleTab,#channelOnlineTab{
 	float:left;
 	width:50%;
