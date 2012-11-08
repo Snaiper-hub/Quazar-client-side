@@ -252,6 +252,21 @@ button:active{}
 	border-bottom:5px transparent solid;
 }
 
+#photo{
+	position:absolute;
+}
+
+#profileLeft{
+	float:left;
+}
+
+#photoArea{
+	height: 550px;
+	width: 400px;
+	margin: 10px;
+	position: relative;
+}
+
 /* перевести все визуальные эффекты выделения списков на этот класс в будущем */
 .activeListItem{
 	color:#fff;

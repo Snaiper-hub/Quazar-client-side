@@ -37,13 +37,21 @@
 			</div>
 			<div id="profile" class="page">
 			<div class="genericPageHeader">Мой профиль</div>
-				Имя: <input id="userName" type="text" placeholder="Имя" />
-				Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
-				Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
-				<input id="userAvatarPath" type="text"/><button id="avatarSelector">Выбрать аватар</button>
-				<canvas id="avatar"></canvas>
-				<button id="profileSave">Сохранить и выйти</button>
-				<button data-action="close">Отмена</button>
+				<div id="profileLeft" >
+					<div id="photoArea"><canvas id="photo"></canvas></div>
+					<button id="avatarSelector">Выбрать аватар</button>
+					<img style="display:none;" id="hidePhoto" src=""/>
+				</div>
+				<div id="profileRight" >
+					Имя: <input id="userName" type="text" placeholder="Имя" />
+					Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
+					Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
+					<img width="150px" height="150px" id="crop_result" src=""/>
+				</div>
+				<div>
+					<button id="profileSave">Сохранить и выйти</button>
+					<button data-action="close">Отмена</button>
+				</div>
 			</div>
 			<div id="channels" class="page">
 				<div class="genericPageHeader">Список каналов</div>

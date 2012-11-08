@@ -163,15 +163,47 @@ $(window).on('app-ready',function(){
 			var stat = fs.statSync(file);
 			var name = path.basename(file);
 			var img = fs.readFileSync(file).toString('base64');
-			$('#hideAvatar').attr('src',"data:image/png;base64," +img).load(function(){
-				var avatar = document.getElementById("hideAvatar");
-				if($('#hideAvatar').height() < 300 && $('#hideAvatar').width() < 250){
-					var canvas=document.getElementById("avatar");
-					var x=canvas.getContext("2d");
-					x.drawImage(avatar,10,10);
-				} else {
-					alert("Слишком большая");
-				}
+				$('#hidePhoto').attr('src',"data:"+type+";base64," +img).load(function(){
+					var photo = document.getElementById("hidePhoto");
+					
+						var canvas=document.getElementById("photo");
+						
+						var photoAreaW = 400;
+						var photoAreaH = 550;
+						// size photo area
+						
+						var hW = $('#hidePhoto').width();
+						var hH = $('#hidePhoto').height();
+						// get size of a hidden photo
+						
+						var ctx=canvas.getContext("2d");
+						
+						var ratio;
+						var ratioW = photoAreaW/hW;
+						var ratioH = photoAreaH/hH;
+						// ratio
+						
+						if(hW > photoAreaW || hH > photoAreaH ){
+							if(ratioW < ratioH){
+								ratio = ratioW;
+							}
+							if(ratioW > ratioH){
+								ratio = ratioH;
+							}
+							canvas.width = hW*ratio;
+							canvas.height = hH*ratio;
+						} else {
+							canvas.width = hW;
+							canvas.height = hH;
+						}
+						
+						ctx.drawImage(photo,0,0,canvas.width, canvas.height);
+						
+						var w = $("#photoArea");
+						$('#photo').css("top",(w.height()-$('#photo').height())/2 + "px");
+						$('#photo').css("left",(w.width()-$('#photo').width())/2 + "px");
+						
+						var dataURL = canvas.toDataURL();
 			});	
 			} else {console.log('error');}
 		});
