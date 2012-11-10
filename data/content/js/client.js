@@ -426,8 +426,12 @@ $(window).on('app-ready',function(){
 	function channelLeave(){
 		var channel = $(this).parent().text();
 		socket.emit('channelLeave',{channel:channel});
-		$('*[data-channel='+channel+']').remove();
-		$('.channelListItem').first().click();
+		if($(this).parent('.channelListItem').next().length){
+			$(this).parent('.channelListItem').next().click();
+		}else{
+			$(this).parent('.channelListItem').prev().click();
+		}
+		$('*[data-channel='+channel+']').remove();		
 	}
 	
 	function handleUserJoin(data){
@@ -480,7 +484,7 @@ $(window).on('app-ready',function(){
 	$('#sendMessage').click(submitMessage);
 	$('#messageField').keypress(function(e){if(e.which===13){submitMessage();return false;}});
 	$('.channel').live('dblclick',joinChannel);
-	$('.channelListItem').live('click',channelClick);	
+	$('#channelsRow').on('click','.channelListItem',channelClick);	
 	$('.channelLeave').live('click',channelLeave);
 	// лайв нужен, ничего зазорного
 	$('#channelTabs').on('click','a',tabSwitch);
