@@ -58,7 +58,7 @@ $(window).on('app-ready',function(){
 	}
 	
 	serverConnect();
-	socket.on('connect', function(){
+	//socket.on('connect', function(){
 	
 	var prevChannel = '';
 	var currentChannel = '';
@@ -69,8 +69,19 @@ $(window).on('app-ready',function(){
 	var settings = getSettingsObject();
 	
 	function getSettingsObject(){
-		var contents = fs.readFileSync(__dirname+'\\settings.json','utf8');
-		var settingsObject = JSON.parse(contents);
+		var settingsObject;
+		var sPath = __dirname+'\\settings.json';
+		fs.exists(sPath,function(exists){
+			if(!exists){
+				fs.open(sPath,"w+",function(err, file_handle){
+					fs.writeSync(file_handle,'{}',null,'utf8');
+				});
+				settingsObject = "";
+			} else {
+				var contents = fs.readFileSync(sPath,'utf8');
+				settingsObject = JSON.parse(contents);
+			}
+		});
 		return settingsObject;
 	}
 	
@@ -246,7 +257,6 @@ $(window).on('app-ready',function(){
 	
 	
 /*			Авторизация			*/
-
 	$('#loginField').val(settings.login);
 	$('#autoLogin').prop("checked", settings.autoLogin);
 	
@@ -487,7 +497,7 @@ $(window).on('app-ready',function(){
 	
 /*		События	- Конец		*/
 	
-});
+//});
 socket.on('error', function(){
 	$('#loader').fadeOut();
 	$('#serverOffline').slideDown();
