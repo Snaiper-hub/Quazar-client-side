@@ -71,17 +71,15 @@ $(window).on('app-ready',function(){
 	function getSettingsObject(){
 		var settingsObject;
 		var sPath = __dirname+'\\settings.json';
-		fs.exists(sPath,function(exists){
-			if(!exists){
-				fs.open(sPath,"w+",function(err, file_handle){
-					fs.writeSync(file_handle,'{}',null,'utf8');
-				});
-				settingsObject = "";
-			} else {
-				var contents = fs.readFileSync(sPath,'utf8');
-				settingsObject = JSON.parse(contents);
-			}
-		});
+		if(!fs.existsSync(sPath)){
+			fs.open(sPath,"w+",function(err, file_handle){
+				fs.writeSync(file_handle,'{}',null,'utf8');
+			});
+			settingsObject = {}
+		} else {
+			var contents = fs.readFileSync(sPath,'utf8');
+			settingsObject = JSON.parse(contents);
+		}
 		return settingsObject;
 	}
 	
@@ -131,22 +129,22 @@ $(window).on('app-ready',function(){
 		var password = $('#regPasswordField').val();
 		var mail = $('#regEmailField').val();		
 		if(login == '' || password == '' || mail == ''){
-			$('#regStatus').html("Надо заполнить полностью!").fadeIn().delay(500).fadeOut(2000);
+			$('#regStatus').html("Надо заполнить полностью!").fadeIn().delay(1000).fadeOut(2000);
 		} else if(password.length<6){
 			$('#regStatus').html("Пароль должен быть больше 6 символов!").fadeIn().fadeOut(2000);
 		} else if(!isValidEmailAddress(mail)){
-			$('#regStatus').html("Адрес почты некорректен").fadeIn().delay(500).fadeOut(2000);
+			$('#regStatus').html("Адрес почты некорректен").fadeIn().delay(1000).fadeOut(2000);
 		} else {
 			socket.emit('userRegistration',{'login' : login,'password' : password,'email' : mail});
 		}
 	}
 	
 	function onRegistrationSuccess(data){
-		$('#regStatus').html("OK").fadeIn().delay(500).fadeOut(2000);		
+		$('#regStatus').html("OK").fadeIn().delay(1000).fadeOut(2000);		
 	}
 	
 	function onRegistrationFailed(){
-		$('#regStatus').html("Fail").fadeIn().delay(500).fadeOut(2000);
+		$('#regStatus').html("Fail").fadeIn().delay(1000).fadeOut(2000);
 	}
 	
 /*			Регистрация - Конец			*/
@@ -279,7 +277,7 @@ $(window).on('app-ready',function(){
 		} else if(settings.login && settings.hash && settings.autoLogin===true){
 			socket.emit('login',{login:settings.login,hash:settings.hash});
 		} else {
-			$('#signInStatus').html("Заполнено не все").fadeIn().delay(500).fadeOut(2000);
+			$('#signInStatus').html("Заполнено не все").fadeIn().delay(1000).fadeOut(2000);
 		}
 	}
 	
