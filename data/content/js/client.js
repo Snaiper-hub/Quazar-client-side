@@ -255,7 +255,7 @@ $(window).on('app-ready',function(){
 		var name = $(this).text();
 		if(name !== settings.login){
 			var message = $('#messageField').val();
-			$('#messageField').val(message + '<b>' + name + '</b> ');
+			$('#messageField').val(message + ' ' + name + ' ');
 		} else return false;
 	}
 
