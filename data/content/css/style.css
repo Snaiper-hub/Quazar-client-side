@@ -63,21 +63,22 @@ input:focus,textarea:focus{
 	float:right;
 }
 button{
-	display:block;
-	box-sizing:border-box;
-	border:1px #33B5E5 solid;
-	background-color:#E0E0E0;
-	height:32px;
-	line-height:32px;
-	padding:0 10px;
-	margin:2px;
-	-webkit-transition:0.2s;
-	border-radius:2px;
+	display: block;
+	box-sizing: border-box;
+	border: 1px #33B5E5 solid;
+	background-color: #E0E0E0;
+	height: 32px;
+	line-height: 32px;
+	padding: 0 10px;
+	margin: 5px 5px;
+	-webkit-transition: 0.2s;
+	border-radius: 2px;
+	box-shadow: 0 0 1px #222;
 }
 
 button:hover{
-	border:1px #33B5E5 solid;
-	background-color:rgba(0,153,204,0.3);
+	border: 1px #33B5E5 solid;
+	background-color: rgba(0, 153, 204, 0.6);
 }
 
 button:active{}
@@ -193,7 +194,7 @@ button:active{}
 	width:320px;
 	height:-webkit-calc(100% - 34px);
 	overflow:hidden;
-	border-right:1px #E0E0E0 solid;
+	border-right:1px #33B5E5 solid;
 }
 #statusBar{
 	height:34px;
@@ -526,12 +527,10 @@ div.currentChannel{
 
 .author{
 	font-weight:bold;
-	cursor: pointer;
 }
 
 .me{
 	color:#0099CC!important;
-	cursor: default!important;
 }
 
 .messageContent{
@@ -549,6 +548,7 @@ div.currentChannel{
 	line-height:18px;
 	z-index:1;
 	border:1px solid #E0E0E0;
+	border-radius: 2px;
 	text-align:center;
 	box-shadow:0px 0px 3px #ccc;
 }
