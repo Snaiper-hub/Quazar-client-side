@@ -231,7 +231,6 @@ $(window).on('app-ready',function(){
 		}else{
 			var authorString='<span class="author">'+data.login+'</span>';
 		}
-		console.log(data.login, currentSpeakers[channel], channel, content);
 		if(data.login===currentSpeakers[channel]){
 			$('.channelContainer[data-channel='+channel+'] .messageContent').last().append('<br />'+content);
 		}else{
@@ -256,7 +255,7 @@ $(window).on('app-ready',function(){
 		if(name !== settings.login){
 			var message = $('#messageField').val();
 			if(message){
-				$('#messageField').val(message + ' ' + name + ' ');
+				$('#messageField').val(message + ' ' + name);
 			} else {
 				$('#messageField').val(name + ' ');
 			}
@@ -417,12 +416,16 @@ $(window).on('app-ready',function(){
 		var name = $(this).html();
 		socket.emit('channelJoin',{login:settings.login,channel:name});
 	}
-	
+
 	function privateChannel(data){
 		var chName;
 		if(data.from !== undefined){
-			$('#privatesRow').append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
-			$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
+			if($('.channelListItem[data-channel='+data.name+']').length > 0){
+				$('.channelListItem[data-channel='+data.name+']').click();
+			} else {
+				$('#privatesRow').append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
+				$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
+			}
 		} else {
 			var user = $(this).attr("data-login");
 			if(settings.login !== user){
@@ -431,10 +434,15 @@ $(window).on('app-ready',function(){
 				} else {
 					chName = user + settings.login;
 				}
-				socket.emit('privateChInitialization',{to:user,name:chName});
-				
-				$('#privatesRow').append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
-				$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
+				if($('.channelListItem[data-channel='+chName+']').length > 0){
+					$('.channelListItem[data-channel='+chName+']').click();
+				} else {
+					socket.emit('privateChInitialization',{to:user,name:chName});
+					
+					$('#privatesRow').append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
+					$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
+					$('.channelListItem[data-channel='+chName+']').click();
+				}
 			}
 		}
 	}
