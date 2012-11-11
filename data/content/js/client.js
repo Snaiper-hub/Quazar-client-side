@@ -320,16 +320,6 @@ $(window).on('app-ready',function(){
 
 
 /*			Действия			*/
-
-	function openSettingsPage(){
-		$('#overlay').fadeIn();
-		$('#settings').fadeIn();
-	}
-	
-	function openProfilePage(){
-		$('#overlay').fadeIn();
-		$('#profile').fadeIn();
-	}
 	
 	$('[data-action=open]').click(function(){
 		$('#overlay').fadeIn();
