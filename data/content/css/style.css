@@ -234,8 +234,8 @@ button:active{}
 	border-radius:0 0 2px 2px;
 }
 
-#settingsPageContent{
-	height: -webkit-calc(100% - 120px);
+.genericPageContent{
+	height: -webkit-calc(100% - 80px);
 }
 
 #settingsDivisionsList{
@@ -266,7 +266,7 @@ button:active{}
 }
 
 #photoArea{
-	height: 550px;
+	height: 400px;
 	width: 400px;
 	margin: 10px;
 	position: relative;
@@ -286,7 +286,6 @@ button:active{}
 #settingsDivisionsPages{
 	height:100%;
 	width:100%;
-	float:left;
 	overflow:hidden;
 }
 #settingsDivisionsPagesWrapper{

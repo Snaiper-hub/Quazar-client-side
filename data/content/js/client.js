@@ -178,7 +178,7 @@ $(window).on('app-ready',function(){
 						var canvas=document.getElementById("photo");
 						
 						var photoAreaW = 400;
-						var photoAreaH = 550;
+						var photoAreaH = 400;
 						// size photo area
 						
 						var hW = $('#hidePhoto').width();

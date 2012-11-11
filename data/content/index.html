@@ -36,44 +36,48 @@
 				<a href="#" id="showLoginPanel" data-action="close">Назад</a>
 			</div>
 			<div id="profile" class="page">
-			<div class="genericPageHeader">Мой профиль</div>
-				<div id="profileLeft" >
-					<div id="photoArea"><canvas id="photo"></canvas></div>
-					<button id="avatarSelector">Выбрать аватар</button>
-					<img style="display:none;" id="hidePhoto" src=""/>
+				<div class="genericPageHeader">Мой профиль</div>
+				<div class="genericPageContent">
+					<div id="profileLeft" >
+						<div id="photoArea"><canvas id="photo"></canvas></div>
+						<button id="avatarSelector">Выбрать аватар</button>
+						<img style="display:none;" id="hidePhoto" src=""/>
+					</div>
+					<div id="profileRight" >
+						Имя: <input id="userName" type="text" placeholder="Имя" />
+						Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
+						Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
+						<img width="150px" height="150px" id="crop_result" src=""/>
+					</div>
 				</div>
-				<div id="profileRight" >
-					Имя: <input id="userName" type="text" placeholder="Имя" />
-					Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
-					Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
-					<img width="150px" height="150px" id="crop_result" src=""/>
-				</div>
-				<div>
+				<div class="genericFooter">
 					<button id="profileSave">Сохранить и выйти</button>
 					<button data-action="close">Отмена</button>
 				</div>
 			</div>
 			<div id="channels" class="page">
 				<div class="genericPageHeader">Список каналов</div>
-				<div class="genericTooltip">Вступить в канал или создать новый:</div>
-				<div id="joinChannelForm">				
-					<span id="joinChannelFormExpander" title="joinChannelFormExpander" ></span>
-					<input id="addChannelField" type="text" placeholder="Название канала" />
-					<button id="createChannel">Создать</button>
+				<div class="genericPageContent">
+					<div class="genericTooltip">Вступить в канал или создать новый:</div>
+					<div id="joinChannelForm">				
+						<span id="joinChannelFormExpander" title="joinChannelFormExpander" ></span>
+						<input id="addChannelField" type="text" placeholder="Название канала" />
+						<button id="createChannel">Создать</button>
+					</div>
+					<div id="channelsList"></div>
 				</div>
-				<div id="channelsList"></div>
 				<div class="genericFooter">
 					<button data-action="close">Отмена</button>
 				</div>
 			</div>
 			<div id="settings" class="page">
 				<div class="genericPageHeader">Настройки</div>
-				<div id="settingsPageContent">
-						<ul id="settingsDivisionsList">
-							<li class="activeTabItem">Main</li>
-							<li>View</li>
-							<li>Network</li>
-						</ul>
+				<div class="genericPageContent">
+					<ul id="settingsDivisionsList">
+						<li class="activeTabItem">Main</li>
+						<li>View</li>
+						<li>Network</li>
+					</ul>
 					<div id="settingsDivisionsPages">
 						<div id="settingsDivisionsPagesWrapper">
 							<div class="settingsDivisionPage">1 Main</div>
