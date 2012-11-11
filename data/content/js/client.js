@@ -250,6 +250,14 @@ $(window).on('app-ready',function(){
 			socket.emit('message',{content:message,channel:currentChannel});
 		}
 	}
+	
+	function fromUser(){
+		var name = $(this).text();
+		if(name !== settings.login){
+			var message = $('#messageField').val();
+			$('#messageField').val(message + '<b>' + name + '</b> ');
+		} else return false;
+	}
 
 /*			Сообщения - Конец			*/
 	
@@ -491,6 +499,7 @@ $(window).on('app-ready',function(){
 	$('#registration').on('click',showRegistration);
 	$('#showLoginPanel').on('click',showSignInForm);
 	$('#regSubmit').on('click',regSubmit);
+	$('#messages').on('click','.author',fromUser);
 	$('#logOut').on('click',logOut);
 	
 /*		События	- Конец		*/

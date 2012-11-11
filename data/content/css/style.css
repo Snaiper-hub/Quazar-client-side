@@ -526,10 +526,12 @@ div.currentChannel{
 
 .author{
 	font-weight:bold;
+	cursor: pointer;
 }
 
 .me{
 	color:#0099CC!important;
+	cursor: default!important;
 }
 
 .messageContent{
