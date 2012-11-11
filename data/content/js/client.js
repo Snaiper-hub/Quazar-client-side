@@ -19,7 +19,7 @@ $(window).on('app-ready',function(){
 		var tH = $('#messageField').height();
 	$('body').mousemove(function(e){
 		var h = tH + (mouseStart-e.pageY);
-		if( h >= 30 && h <= 200 ){
+		if( h >= 36 && h <= 200 ){
 			$('#messageField').height(h);
 			$('#messages').css("padding-bottom",100+h);
 			 
