@@ -58,7 +58,7 @@ $(window).on('app-ready',function(){
 	}
 	
 	serverConnect();
-	//socket.on('connect', function(){
+	socket.on('connect', function(){
 	
 	var prevChannel = '';
 	var currentChannel = '';
@@ -131,22 +131,22 @@ $(window).on('app-ready',function(){
 		var password = $('#regPasswordField').val();
 		var mail = $('#regEmailField').val();		
 		if(login == '' || password == '' || mail == ''){
-			$('#regStatus').html("Надо заполнить полностью!").fadeIn().fadeOut(2000);
+			$('#regStatus').html("Надо заполнить полностью!").fadeIn().delay(500).fadeOut(2000);
 		} else if(password.length<6){
 			$('#regStatus').html("Пароль должен быть больше 6 символов!").fadeIn().fadeOut(2000);
 		} else if(!isValidEmailAddress(mail)){
-			$('#regStatus').html("Адрес почты некорректен").fadeIn().fadeOut(2000);
+			$('#regStatus').html("Адрес почты некорректен").fadeIn().delay(500).fadeOut(2000);
 		} else {
 			socket.emit('userRegistration',{'login' : login,'password' : password,'email' : mail});
 		}
 	}
 	
 	function onRegistrationSuccess(data){
-		$('#regStatus').html("OK").fadeIn().fadeOut(2000);		
+		$('#regStatus').html("OK").fadeIn().delay(500).fadeOut(2000);		
 	}
 	
 	function onRegistrationFailed(){
-		$('#regStatus').html("Fail").fadeIn().fadeOut(2000);
+		$('#regStatus').html("Fail").fadeIn().delay(500).fadeOut(2000);
 	}
 	
 /*			Регистрация - Конец			*/
@@ -279,14 +279,14 @@ $(window).on('app-ready',function(){
 		} else if(settings.login && settings.hash && settings.autoLogin===true){
 			socket.emit('login',{login:settings.login,hash:settings.hash});
 		} else {
-			$('#signInStatus').html("Заполнено не все").fadeIn().fadeOut(2000);
+			$('#signInStatus').html("Заполнено не все").fadeIn().delay(500).fadeOut(2000);
 		}
 	}
 	
 	function loginError(error){
 		$('#loginPanel').slideDown();
 		hideLoader();
-		$('#signInStatus').html(error).fadeIn().fadeOut(4000);
+		$('#signInStatus').html(error).fadeIn().delay(1000).fadeOut(3000);
 	}
 	
 	function onLoginSuccess(data){
@@ -497,7 +497,7 @@ $(window).on('app-ready',function(){
 	
 /*		События	- Конец		*/
 	
-//});
+});
 socket.on('error', function(){
 	$('#loader').fadeOut();
 	$('#serverOffline').slideDown();
@@ -512,7 +512,7 @@ socket.on('disconnect', function(){
 	$('#messages').children().remove();
 	$('#serverOffline').slideDown();
 	//setTimeout(function(){serverConnect(true);}, 60000);
-	// само коннектится оп экспоненте, при раскомменчивании возможно 2 реконнекта
+	// само коннектится по экспоненте, при раскомменчивании возможно 2 реконнекта
 	console.log("Дисконнект");
 });
 });
