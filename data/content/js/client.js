@@ -60,7 +60,6 @@ $(window).on('app-ready',function(){
 	serverConnect();
 	socket.on('connect', function(){
 	
-	var prevChannel = '';
 	var currentChannel = '';
 	var currentSpeakers = [];
 	
@@ -232,6 +231,7 @@ $(window).on('app-ready',function(){
 		}else{
 			var authorString='<span class="author">'+data.login+'</span>';
 		}
+		console.log(data.login, currentSpeakers[channel], channel, content);
 		if(data.login===currentSpeakers[channel]){
 			$('.channelContainer[data-channel='+channel+'] .messageContent').last().append('<br />'+content);
 		}else{
@@ -394,7 +394,7 @@ $(window).on('app-ready',function(){
 			}
 			
 			for(var ii = 0;ii<online.length;ii++){
-				$('.channelOnlineContainer[data-channel='+name+']').append('<div data-login="'+online[ii]+'">'+online[ii]+'</div>');
+				$('.channelOnlineContainer[data-channel='+name+']').append('<div class="user" data-login="'+online[ii]+'">'+online[ii]+'</div>');
 			}
 		}
 	}
@@ -413,15 +413,33 @@ $(window).on('app-ready',function(){
 		var name = $(this).html();
 		socket.emit('channelJoin',{login:settings.login,channel:name});
 	}
+	
+	function privateChannel(data){
+		var chName;
+		if(data.from !== undefined){
+			$('#privatesRow').append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
+			$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
+		} else {
+			var user = $(this).attr("data-login");
+			if(settings.login !== user){
+				if(settings.login > user){
+					chName = settings.login + user;
+				} else {
+					chName = user + settings.login;
+				}
+				socket.emit('privateChInitialization',{to:user,name:chName});
+				
+				$('#privatesRow').append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
+				$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
+			}
+		}
+	}
 
 	function channelClick(){
 		$('div.channelContainer[data-channel='+currentChannel+']').hide();
 		$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
 		
-		prevChannel = currentChannel;
-		currentChannel = $(this).text();
-		
-		console.log(currentChannel);
+		currentChannel = $(this).attr("data-channel");
 		
 		$('.currentChannel').removeClass('currentChannel activeTabItem');
 		$('div.channelContainer[data-channel='+currentChannel+']').addClass('currentChannel').show();
@@ -430,7 +448,7 @@ $(window).on('app-ready',function(){
 	}
 	
 	function channelLeave(){
-		var channel = $(this).parent().text();
+		var channel = $(this).parent().attr("data-channel");
 		socket.emit('channelLeave',{channel:channel});
 		if($(this).parent('.channelListItem').next().length){
 			$(this).parent('.channelListItem').next().click();
@@ -444,7 +462,7 @@ $(window).on('app-ready',function(){
 		var channel = data.channel;
 		var user = data.login;
 		$('.channelContainer[data-channel='+channel+']').append('<div class="message"><span class="author">'+user+'</span> присоединился к каналу...</div>');
-		$('.channelOnlineContainer[data-channel='+channel+']').append('<div data-login="'+user+'">'+user+'</div>');
+		$('.channelOnlineContainer[data-channel='+channel+']').append('<div class="user "data-login="'+user+'">'+user+'</div>');
 		scroll();
 		currentSpeakers[channel]='';
 	}
@@ -484,14 +502,15 @@ $(window).on('app-ready',function(){
 	socket.on('sendChannel',parseChannel);
 	socket.on('loginProcedureFinish',onLoginFinish);
 	socket.on('allChannels',openChannelsList);
+	socket.on('privateChInitialization',privateChannel);
 	$('#profileSave').click(saveProfileInfo);
 	$('#settingsDivisionsList li').click(settingsListClick);
 	$('#openChannels').click(getChannels);
 	$('#sendMessage').click(submitMessage);
 	$('#messageField').keypress(function(e){if(e.which===13){submitMessage();return false;}});
 	$('.channel').live('dblclick',joinChannel);
-	$('#channelsRow').on('click','.channelListItem',channelClick);	
-	$('.channelLeave').live('click',channelLeave);
+	$('#rightColumnHeader').on('click','.channelListItem',channelClick);	
+	$('#rightColumnHeader').on('click','.channelLeave',channelLeave);
 	// лайв нужен, ничего зазорного
 	$('#channelTabs').on('click','a',tabSwitch);
 	$('#createChannel').on('click',addChannel);
@@ -500,6 +519,7 @@ $(window).on('app-ready',function(){
 	$('#showLoginPanel').on('click',showSignInForm);
 	$('#regSubmit').on('click',regSubmit);
 	$('#messages').on('click','.author',fromUser);
+	$('#tabsWrapper').on('dblclick','.user',privateChannel);
 	$('#logOut').on('click',logOut);
 	
 /*		События	- Конец		*/
