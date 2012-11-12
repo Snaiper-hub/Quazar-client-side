@@ -23,7 +23,7 @@ $(window).on('app-ready',function(){
 			$('#messageField').height(h);
 			$('#messages').css("padding-bottom",100+h);
 			 
-			var $el=$('#messages .currentChannel');
+			var $el=$('#messages').find('.currentChannel');
 			var height = $el[0].scrollHeight;
 			$el.animate({scrollTop: height + "px"}, 0);
 		}
@@ -94,7 +94,7 @@ $(window).on('app-ready',function(){
 /*		Эффекты		*/
 
 	function scroll() {
-		var $el=$('#messages .currentChannel');
+		var $el=$('#messages').find('.currentChannel');
 		var height = $el[0].scrollHeight;
 		$el.animate({scrollTop: height + "px"}, {queue: false}, 200);
 	}
@@ -365,7 +365,7 @@ $(window).on('app-ready',function(){
 	function settingsListClick(){
 		var index = $('#settingsDivisionsList li').index(this);
 		var width = $('.settingsDivisionPage').first().width();
-		$('#settingsDivisionsList .activeTabItem').removeClass('activeTabItem');
+		$('#settingsDivisionsList').find('.activeTabItem').removeClass('activeTabItem');
 		$(this).addClass('activeTabItem');
 		$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false},300);
 	}
