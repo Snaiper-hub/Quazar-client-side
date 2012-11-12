@@ -282,6 +282,11 @@ button:active{}
 	border-bottom:5px #33B5E5 solid!important;
 }
 
+.waitTabItem{
+	color:#000;
+	border-bottom:5px #FFBB33 solid!important;
+}
+
 #settingsDivisionsPages{
 	height:100%;
 	width:100%;
