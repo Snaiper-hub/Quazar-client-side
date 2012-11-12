@@ -389,7 +389,7 @@ socket.on('connect', function(){
 			currentSpeakers[name] = '';
 			$('.channelContainer[data-channel='+name+']').append('<div class="channelTopic">'+header+'</div>');
 		
-			if(i===0 && channels.length>1){
+			if(i===0){
 				currentChannel = name;
 				$('#channelsRow').children('div').first().addClass('currentChannel activeTabItem');
 				$('.channelContainer').first().addClass('currentChannel');
@@ -439,7 +439,7 @@ socket.on('connect', function(){
 				if($('.channelListItem[data-channel='+chName+']').length){
 					$('.channelListItem[data-channel='+chName+']').click();
 				} else {
-					socket.emit('privateChInitialization',{to:user,name:chName});
+					socket.emit('privateChannel',{to:user,name:chName});
 					
 					$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>').click();
 					$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
