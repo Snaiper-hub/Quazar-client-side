@@ -183,9 +183,8 @@ button:active{}
 	position: relative;
 }
 #rightColumnHeader{
-	border-bottom:1px #E0E0E0 solid;
 	overflow:hidden;
-	box-shadow:0px 0 3px rgba(0,0,0,0.3);
+	box-shadow:0px 0 10px rgba(0,0,0,0.3);
 }
 
 #leftColumn{
@@ -371,6 +370,7 @@ button:active{}
 	background:url(../img/groups.png) no-repeat center left #E0E0E0;
 }
 #privatesRow{
+	display:none;
 	background:url(../img/private.png) no-repeat center left #E0E0E0;
 }
 
@@ -462,6 +462,10 @@ button:active{}
 }
 .currentChannel .channelLeave{
 	display:block;
+}
+
+.channelTopic{
+	padding:5px;
 }
 
 div.currentChannel{

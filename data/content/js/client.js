@@ -387,7 +387,7 @@ socket.on('connect', function(){
 			$('#channelsRow').append('<div class="channelListItem" data-channel="'+name+'">'+name+'<span class="channelLeave"></span></div>');
 			$('#messages').append('<div class="channelContainer" data-channel="'+name+'"></div>');
 			currentSpeakers[name] = '';
-			$('.channelContainer[data-channel='+name+']').append(header);
+			$('.channelContainer[data-channel='+name+']').append('<div class="channelTopic">'+header+'</div>');
 		
 			if(i===0 && channels.length>1){
 				currentChannel = name;
@@ -425,7 +425,7 @@ socket.on('connect', function(){
 			if($('.channelListItem[data-channel='+data.name+']').length){
 				$('.channelListItem[data-channel='+data.name+']').click();
 			} else {
-				$('#privatesRow').append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
+				$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>').click();
 				$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
 			}
 		} else {
@@ -437,7 +437,7 @@ socket.on('connect', function(){
 				} else {
 					socket.emit('privateChInitialization',{to:user,name:chName});
 					
-					$('#privatesRow').append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
+					$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>').click();
 					$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
 					$('.channelListItem[data-channel='+chName+']').click();
 				}
