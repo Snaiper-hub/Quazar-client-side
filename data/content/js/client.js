@@ -439,7 +439,7 @@ socket.on('connect', function(){
 		}
 	}
 	
-	function getPrivateChannel(){
+	function getPrivateChannel(data){
 		$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>').click();
 		$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
 	}
@@ -511,7 +511,7 @@ socket.on('connect', function(){
 	socket.on('sendChannel',parseChannel);
 	socket.on('loginProcedureFinish',onLoginFinish);
 	socket.on('allChannels',openChannelsList);
-	socket.on('getPrivateChannel',getPrivateChannel);
+	socket.on('privateChannel',getPrivateChannel);
 	$('#profileSave').click(saveProfileInfo);
 	$('#settingsDivisionsList li').click(settingsListClick);
 	$('#openChannels').click(getChannels);
