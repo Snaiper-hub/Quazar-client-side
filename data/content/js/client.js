@@ -428,12 +428,8 @@ $(window).on('app-ready',function(){
 			}
 		} else {
 			var user = $(this).attr("data-login");
-			if(settings.login !== user){
-				if(settings.login > user){
-					chName = settings.login + user;
-				} else {
-					chName = user + settings.login;
-				}
+			if(settings.login !== user){				
+				chName = [settings.login, user].sort().join("");				
 				if($('.channelListItem[data-channel='+chName+']').length > 0){
 					$('.channelListItem[data-channel='+chName+']').click();
 				} else {
