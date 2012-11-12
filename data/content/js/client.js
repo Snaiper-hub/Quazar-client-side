@@ -17,17 +17,17 @@ $(window).on('app-ready',function(){
 	$('body').on("mousedown","#textareaResizer",function(event){
 		var mouseStart = event.pageY;
 		var tH = $('#messageField').height();
-	$('body').mousemove(function(e){
-		var h = tH + (mouseStart-e.pageY);
-		if( h >= 36 && h <= 200 ){
-			$('#messageField').height(h);
-			$('#messages').css("padding-bottom",100+h);
-			 
-			var $el=$('#messages').find('.currentChannel');
-			var height = $el[0].scrollHeight;
-			$el.animate({scrollTop: height + "px"}, 0);
-		}
-	});
+		$('body').mousemove(function(e){
+			var h = tH + (mouseStart-e.pageY);
+			if( h >= 36 && h <= 200 ){
+				$('#messageField').height(h);
+				$('#messages').css("padding-bottom",100+h);
+				 
+				var $el=$('#messages').find('.currentChannel');
+				var height = $el[0].scrollHeight;
+				$el.animate({scrollTop: height + "px"}, 0);
+			}
+		});
 	}).mouseup(function(){
 		$('body').unbind('mousemove');
     }).mouseleave(function(){
@@ -35,7 +35,7 @@ $(window).on('app-ready',function(){
 	});
 	
 	$(document).on('click', function(e){
-		if ($(e.target).closest('#settingsButton').length != 0){
+		if ($(e.target).closest('#settingsButton').length !== 0){
 			$("#contextmenu").show().css({
 				left:e.pageX,
 				top:e.pageY
@@ -96,7 +96,7 @@ $(window).on('app-ready',function(){
 	function scroll() {
 		var $el=$('#messages').find('.currentChannel');
 		var height = $el[0].scrollHeight;
-		$el.animate({scrollTop: height + "px"}, {queue: false}, 200);
+		$el.animate({scrollTop: height + "px"}, {queue: false});
 	}
 	
 	function showLoader(){
@@ -166,14 +166,14 @@ $(window).on('app-ready',function(){
 			dirSelect:false
 		},function(err,files){
 			if(!err){
-			var file = files[0];
-			var type = mime.lookup(file);
-			var stat = fs.statSync(file);
-			var name = path.basename(file);
-			var img = fs.readFileSync(file).toString('base64');
-				$('#hidePhoto').attr('src',"data:"+type+";base64," +img).load(function(){
-					var photo = document.getElementById("hidePhoto");
-					
+				var file = files[0];
+				var type = mime.lookup(file);
+				var stat = fs.statSync(file);
+				var name = path.basename(file);
+				var img = fs.readFileSync(file).toString('base64');
+					$('#hidePhoto').attr('src',"data:"+type+";base64," +img).load(function(){
+						var photo = document.getElementById("hidePhoto");
+						
 						var canvas=document.getElementById("photo");
 						
 						var photoAreaW = 400;
@@ -190,7 +190,7 @@ $(window).on('app-ready',function(){
 						var ratioW = photoAreaW/hW;
 						var ratioH = photoAreaH/hH;
 						// ratio
-						
+						// где то тут можно использвать Math.max(...)
 						if(hW > photoAreaW || hH > photoAreaH ){
 							if(ratioW < ratioH){
 								ratio = ratioW;
@@ -212,8 +212,10 @@ $(window).on('app-ready',function(){
 						$('#photo').css("left",(w.width()-$('#photo').width())/2 + "px");
 						
 						var dataURL = canvas.toDataURL();
-			});	
-			} else {console.log('error');}
+				});	
+			} else {
+				console.log('error in image selection');
+			}
 		});
 	});
 	
@@ -244,7 +246,7 @@ $(window).on('app-ready',function(){
 	function submitMessage(){
 		var message=$('#messageField').val();
 		$('#messageField').focus();
-		if(message != ''){
+		if(message !== ''){
 			$('#messageField').val('');
 			socket.emit('message',{content:message,channel:currentChannel});
 		}
@@ -349,10 +351,9 @@ $(window).on('app-ready',function(){
 	function openChannelsList(data){
 		$('#overlay').fadeIn();
 		$('#channelsList').html('');
-		for(var i=0;i<data.channels.length;i++){
-			$('#channelsList').append("<div class='channel'>" + data.channels[i].name + "</div>");
-		}
-		
+		data.channels.forEach(function(channel){
+			$('#channelsList').append("<div class='channel'>" + channel.name + "</div>");
+		});
 		$('#channels').fadeIn();
 	}
 	
@@ -367,7 +368,7 @@ $(window).on('app-ready',function(){
 		var width = $('.settingsDivisionPage').first().width();
 		$('#settingsDivisionsList').find('.activeTabItem').removeClass('activeTabItem');
 		$(this).addClass('activeTabItem');
-		$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false},300);
+		$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false});
 	}
 	
 /*			Действия - Конец			*/	
@@ -420,7 +421,7 @@ $(window).on('app-ready',function(){
 	function privateChannel(data){
 		var chName;
 		if(data.from !== undefined){
-			if($('.channelListItem[data-channel='+data.name+']').length > 0){
+			if($('.channelListItem[data-channel='+data.name+']').length){
 				$('.channelListItem[data-channel='+data.name+']').click();
 			} else {
 				$('#privatesRow').append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
@@ -430,7 +431,7 @@ $(window).on('app-ready',function(){
 			var user = $(this).attr("data-login");
 			if(settings.login !== user){				
 				chName = [settings.login, user].sort().join("");				
-				if($('.channelListItem[data-channel='+chName+']').length > 0){
+				if($('.channelListItem[data-channel='+chName+']').length){
 					$('.channelListItem[data-channel='+chName+']').click();
 				} else {
 					socket.emit('privateChInitialization',{to:user,name:chName});
@@ -490,7 +491,7 @@ $(window).on('app-ready',function(){
 		var index = $('#channelTabs a').index(this);
 		$('.activeTab').removeClass('activeTab activeTabItem');
 		$(this).addClass('activeTab activeTabItem');
-		$('#tabs').animate({scrollLeft:index*400},{queue:false},300);
+		$('#tabs').animate({scrollLeft:index*400},{queue:false});
 	}
 	
 /*			Каналы - Конец			*/
