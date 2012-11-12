@@ -28,7 +28,7 @@ input[type="password"], input[type="text"]{
 	height:32px;
 	line-height:32px;	
 	padding:0 3px;
-	margin:2px;
+	margin:5px 2px;
 	-webkit-transition:0.2s;
 }
 
@@ -381,12 +381,12 @@ button:active{}
 	line-height:32px;
 	cursor:pointer;
 	margin:0;
-	padding:0;
+	padding:0 25px;
 	background-color: #E0E0E0;
 	-webkit-transition:0.2s;
 	outline:1px transparent solid;
-	width:100px;
 	text-align:center;
+	width:auto;
 	float:left;
 	border-bottom:5px transparent solid;
 }
@@ -408,7 +408,7 @@ button:active{}
 	line-height:32px;	
 	display:block;
 	float:left;
-	margin:2px;
+	margin:5px 2px;
 	background:url(../img/add-group.png) no-repeat center left;
 	-webkit-transition:0.2s;
 }

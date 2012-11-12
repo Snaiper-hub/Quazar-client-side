@@ -410,8 +410,12 @@ socket.on('connect', function(){
 	
 	function addChannel(){
 		var name = $('#addChannelField').val();
-		$('#addChannelField').val('');
-		socket.emit('createChannel',{channel:name});
+		if(name.length >= 3){
+			$('#addChannelField').val('');
+			socket.emit('createChannel',{channel:name});
+		}else{
+			// добавить предупреждение
+		}
 	}
 	
 	function joinChannel(){
