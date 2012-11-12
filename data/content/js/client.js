@@ -14,7 +14,7 @@ $(window).on('app-ready',function(){
 		}
 	});
 	
-	$('body').on("mousedown","#textareaResizer",function(event){
+	$('body').on('mousedown','#textareaResizer',function(event){
 		var mouseStart = event.pageY;
 		var tH = $('#messageField').height();
 		$('body').mousemove(function(e){
@@ -36,7 +36,7 @@ $(window).on('app-ready',function(){
 	
 	$(document).on('click', function(e){
 		if ($(e.target).closest('#settingsButton').length !== 0){
-			$("#contextmenu").show().css({
+			$('#contextmenu').show().css({
 				left:e.pageX,
 				top:e.pageY
 			});
@@ -58,7 +58,8 @@ $(window).on('app-ready',function(){
 	}
 	
 	serverConnect();
-	socket.on('connect', function(){
+	
+socket.on('connect', function(){
 	
 	var currentChannel = '';
 	var currentSpeakers = [];
@@ -71,7 +72,7 @@ $(window).on('app-ready',function(){
 		var settingsObject;
 		var sPath = __dirname+'\\settings.json';
 		if(!fs.existsSync(sPath)){
-			fs.open(sPath,"w+",function(err, file_handle){
+			fs.open(sPath,'w+',function(err, file_handle){
 				fs.writeSync(file_handle,'{}',null,'utf8');
 			});
 			settingsObject = {}
@@ -128,22 +129,22 @@ $(window).on('app-ready',function(){
 		var password = $('#regPasswordField').val();
 		var mail = $('#regEmailField').val();		
 		if(login == '' || password == '' || mail == ''){
-			$('#regStatus').html("Надо заполнить полностью!").fadeIn().delay(1000).fadeOut(2000);
+			$('#regStatus').html('Надо заполнить полностью!').fadeIn().delay(1000).fadeOut(2000);
 		} else if(password.length<6){
-			$('#regStatus').html("Пароль должен быть больше 6 символов!").fadeIn().fadeOut(2000);
+			$('#regStatus').html('Пароль должен быть больше 6 символов!').fadeIn().fadeOut(2000);
 		} else if(!isValidEmailAddress(mail)){
-			$('#regStatus').html("Адрес почты некорректен").fadeIn().delay(1000).fadeOut(2000);
+			$('#regStatus').html('Адрес почты некорректен').fadeIn().delay(1000).fadeOut(2000);
 		} else {
 			socket.emit('userRegistration',{'login' : login,'password' : password,'email' : mail});
 		}
 	}
 	
 	function onRegistrationSuccess(data){
-		$('#regStatus').html("OK").fadeIn().delay(1000).fadeOut(2000);		
+		$('#regStatus').html('OK').fadeIn().delay(1000).fadeOut(2000);		
 	}
 	
 	function onRegistrationFailed(){
-		$('#regStatus').html("Fail").fadeIn().delay(1000).fadeOut(2000);
+		$('#regStatus').html('Fail').fadeIn().delay(1000).fadeOut(2000);
 	}
 	
 /*			Регистрация - Конец			*/
@@ -171,10 +172,10 @@ $(window).on('app-ready',function(){
 				var stat = fs.statSync(file);
 				var name = path.basename(file);
 				var img = fs.readFileSync(file).toString('base64');
-					$('#hidePhoto').attr('src',"data:"+type+";base64," +img).load(function(){
-						var photo = document.getElementById("hidePhoto");
+					$('#hidePhoto').attr('src','data:'+type+';base64,' +img).load(function(){
+						var photo = document.getElementById('hidePhoto');
 						
-						var canvas=document.getElementById("photo");
+						var canvas=document.getElementById('photo');
 						
 						var photoAreaW = 400;
 						var photoAreaH = 400;
@@ -184,7 +185,7 @@ $(window).on('app-ready',function(){
 						var hH = $('#hidePhoto').height();
 						// get size of a hidden photo
 						
-						var ctx=canvas.getContext("2d");
+						var ctx=canvas.getContext('2d');
 						
 						var ratio;
 						var ratioW = photoAreaW/hW;
@@ -207,9 +208,9 @@ $(window).on('app-ready',function(){
 						
 						ctx.drawImage(photo,0,0,canvas.width, canvas.height);
 						
-						var w = $("#photoArea");
-						$('#photo').css("top",(w.height()-$('#photo').height())/2 + "px");
-						$('#photo').css("left",(w.width()-$('#photo').width())/2 + "px");
+						var w = $('#photoArea');
+						$('#photo').css('top',(w.height()-$('#photo').height())/2 + 'px');
+						$('#photo').css('left',(w.width()-$('#photo').width())/2 + 'px');
 						
 						var dataURL = canvas.toDataURL();
 				});	
@@ -269,7 +270,7 @@ $(window).on('app-ready',function(){
 	
 /*			Авторизация			*/
 	$('#loginField').val(settings.login);
-	$('#autoLogin').prop("checked", settings.autoLogin);
+	$('#autoLogin').prop('checked', settings.autoLogin);
 	
 	if(settings.login && settings.hash && settings.autoLogin===true){
 		signIn();
@@ -290,7 +291,7 @@ $(window).on('app-ready',function(){
 		} else if(settings.login && settings.hash && settings.autoLogin===true){
 			socket.emit('login',{login:settings.login,hash:settings.hash});
 		} else {
-			$('#signInStatus').html("Заполнено не все").fadeIn().delay(1000).fadeOut(2000);
+			$('#signInStatus').html('Заполнено не все').fadeIn().delay(1000).fadeOut(2000);
 		}
 	}
 	
@@ -331,7 +332,7 @@ $(window).on('app-ready',function(){
 		$('.channelContainer').remove();
 		$('.channelOnlineContainer').remove();
 		$('#messages').children().remove();
-		$('#autoLogin').removeAttr("checked");
+		$('#autoLogin').removeAttr('checked');
 		saveSetting('hash','');
 		saveSetting('autoLogin','');
 		socket.emit('logOut');
@@ -352,7 +353,7 @@ $(window).on('app-ready',function(){
 		$('#overlay').fadeIn();
 		$('#channelsList').html('');
 		data.channels.forEach(function(channel){
-			$('#channelsList').append("<div class='channel'>" + channel.name + "</div>");
+			$('#channelsList').append('<div class="channel">' + channel.name + '</div>');
 		});
 		$('#channels').fadeIn();
 	}
@@ -428,7 +429,7 @@ $(window).on('app-ready',function(){
 				$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
 			}
 		} else {
-			var user = $(this).attr("data-login");
+			var user = $(this).attr('data-login');
 			if(settings.login !== user){				
 				chName = [settings.login, user].sort().join("");				
 				if($('.channelListItem[data-channel='+chName+']').length){
@@ -457,7 +458,7 @@ $(window).on('app-ready',function(){
 	}
 	
 	function channelLeave(){
-		var channel = $(this).parent().attr("data-channel");
+		var channel = $(this).parent().attr('data-channel');
 		socket.emit('channelLeave',{channel:channel});
 		if($(this).parent('.channelListItem').next().length){
 			$(this).parent('.channelListItem').next().click();
@@ -534,21 +535,21 @@ $(window).on('app-ready',function(){
 /*		События	- Конец		*/
 	
 });
-socket.on('error', function(){
-	$('#loader').fadeOut();
-	$('#serverOffline').slideDown();
-	setTimeout(function(){serverConnect(true);}, 20000);
-	console.log("Ошибка соединения");
-});
-socket.on('disconnect', function(){
-	$('#overlay').fadeIn();
-	$('#channelsRow').children().remove();
-	$('.channelContainer').remove();
-	$('.channelOnlineContainer').remove();
-	$('#messages').children().remove();
-	$('#serverOffline').slideDown();
-	//setTimeout(function(){serverConnect(true);}, 60000);
-	// само коннектится по экспоненте, при раскомменчивании возможно 2 реконнекта
-	console.log("Дисконнект");
-});
+	socket.on('error', function(){
+		$('#loader').fadeOut();
+		$('#serverOffline').slideDown();
+		setTimeout(function(){serverConnect(true);}, 20000);
+		console.log('Ошибка соединения');
+	});
+	socket.on('disconnect', function(){
+		$('#overlay').fadeIn();
+		$('#channelsRow').children().remove();
+		$('.channelContainer').remove();
+		$('.channelOnlineContainer').remove();
+		$('#messages').children().remove();
+		$('#serverOffline').slideDown();
+		//setTimeout(function(){serverConnect(true);}, 60000);
+		// само коннектится по экспоненте, при раскомменчивании возможно 2 реконнекта
+		console.log('Дисконнект');
+	});
 });
