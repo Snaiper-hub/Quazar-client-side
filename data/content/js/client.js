@@ -268,6 +268,7 @@ socket.on('connect', function(){
 	
 	
 /*			Авторизация			*/
+
 	$('#loginField').val(settings.login);
 	$('#autoLogin').prop('checked', settings.autoLogin);
 	
@@ -342,27 +343,19 @@ socket.on('connect', function(){
 
 /*			Действия			*/
 	
-	$('[data-action=open]').click(function(){
+	function openWindow(){
 		$('#overlay').fadeIn();
 		var page = $(this).data('page');
 		$('#'+page).fadeIn();
-	});
-	
-	function openChannelsList(data){
-		$('#overlay').fadeIn();
-		$('#channelsList').html('');
-		data.channels.forEach(function(channel){
-			$('#channelsList').append('<div class="channel">' + channel.name + '</div>');
-		});
-		$('#channels').fadeIn();
 	}
 	
-	$('[data-action=close]').click(function(){
+	function closeWindow(){
 		var page = $(this).closest('.page');
 		$('#overlay').fadeOut(function(){
 			page.fadeOut();
 		});
-	});
+	}
+
 	function settingsListClick(){
 		var index = $('#settingsDivisionsList li').index(this);
 		var width = $('.settingsDivisionPage').first().width();
@@ -407,6 +400,12 @@ socket.on('connect', function(){
 		socket.emit('getChannels');
 	}
 	
+	function channelsList(data){
+		data.channels.forEach(function(channel){
+			$('#channelsList').html('<div class="channel">' + channel.name + '</div>');
+		});
+	}
+	
 	function addChannel(){
 		var name = $('#addChannelField').val();
 		if(name.length >= 3){
@@ -432,7 +431,7 @@ socket.on('connect', function(){
 			} else {
 				socket.emit('createPrivateChannel',{to:user,name:chName});
 					
-				$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>').click();
+				$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
 				$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
 				$('.channelListItem[data-channel='+chName+']').click();
 			}
@@ -440,8 +439,10 @@ socket.on('connect', function(){
 	}
 	
 	function getPrivateChannel(data){
-		$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>').click();
-		$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
+		if(!$('.channelListItem[data-channel='+data.name+']').length){
+			$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
+			$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
+		}
 	}
 
 	function channelClick(){
@@ -510,11 +511,13 @@ socket.on('connect', function(){
 	socket.on('userLeaved',handleUserLeave);
 	socket.on('sendChannel',parseChannel);
 	socket.on('loginProcedureFinish',onLoginFinish);
-	socket.on('allChannels',openChannelsList);
+	socket.on('allChannels',channelsList);
 	socket.on('privateChannel',getPrivateChannel);
+	$('[data-action=open]').click(openWindow);
+	$('[data-action=close]').click(closeWindow);
+	$('[data-page=channels]').click(getChannels);
 	$('#profileSave').click(saveProfileInfo);
 	$('#settingsDivisionsList li').click(settingsListClick);
-	$('#openChannels').click(getChannels);
 	$('#sendMessage').click(submitMessage);
 	$('#messageField').keypress(function(e){if(e.which===13){submitMessage();return false;}});
 	$('.channel').live('dblclick',joinChannel);
