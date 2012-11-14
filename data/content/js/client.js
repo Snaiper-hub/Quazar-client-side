@@ -401,9 +401,11 @@ socket.on('connect', function(){
 	}
 	
 	function channelsList(data){
+	var channels = '';
 		data.channels.forEach(function(channel){
-			$('#channelsList').html('<div class="channel">' + channel.name + '</div>');
+			channels += '<div class="channel">' + channel.name + '</div>';
 		});
+		$('#channelsList').html(channels);
 	}
 	
 	function addChannel(){
