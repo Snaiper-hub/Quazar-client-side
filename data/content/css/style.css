@@ -597,7 +597,7 @@ div.currentChannel{
 	padding:5px;
 }
 
-#contextmenu,#userContextMenu{
+#userContextMenu{
 	display:none;
 	position:absolute;
 	background-color: #fff;
@@ -611,14 +611,14 @@ div.currentChannel{
 	box-shadow:0px 0px 3px #ccc;
 }
 
-#contextmenu div,#userContextMenu div{
+#userContextMenu div{
 	float:left;
 	line-height:32px;
 	width:100%;
 	cursor:pointer;
 	font-size:15px;
 }
-#contextmenu div:hover,#userContextMenu div:hover{
+#userContextMenu div:hover{
 	background-color: #33B5E5;
 }
 
