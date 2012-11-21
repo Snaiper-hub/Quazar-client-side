@@ -1,558 +1,715 @@
 $(window).on('app-ready',function(){
-	var fs = require('fs');
 	var mime = require('mime');
 	var path = require('path');
-	var net = require('net');
-	var socket;
-	var rc = false;
+	var fs = require('fs');
+	var child_process = require('child_process');
 	
-	$('body').on('contextmenu', function(e){
-		var el = e.srcElement;
-		if(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {} else {
-			e.preventDefault();
-			$("#contextmenu").hide();
+	var Render = function() {
+		this.GetFieldValue = function(field){
+			return $('#'+field).val();
+		};
+		this.SetMessageFieldValue = function(value){
+			$('#messageField').val(value);
 		}
-	});
+		this.GetMessageFiledValue = function(){
+			return $('#messageField').val();
+		}
+		this.ShowContextMenu = function(event){
+			var el = event.target;
+			console.log(event);
+			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')){
+				event.preventDefault();
+			}
+			if (el.className === 'user'){
+				$('#userContextMenu').css({
+					left:event.pageX,
+					top:event.pageY
+				}).show();
+				FileTransferManager.SelectedUser = $(el).html();
+			} else {
+				$('#userContextMenu').hide();
+			}
+		};
+		this.HideContextMenu = function(){
+			$('#userContextMenu').hide();
+		}
+		this.ShowLoader = function(){
+			$('#loader').fadeIn();
+		};
+		this.HideLoader = function(){
+			$('#loader').fadeOut();
+		};
+		this.ShowOverlay = function(){
+			$('#overlay').fadeIn();
+		}
+		this.HideOverlay = function(){
+			$('#overlay').fadeOut();
+		}
+		this.ShowLoginPanel = function(callback){
+			$('#loginPanel').slideDown();
+		};
+		this.HideLoginPanel = function(){
+			$('#loginPanel').slideUp();
+		};
+		this.ShowSignInForm = function(){
+			$('#registrationPanel').slideUp(function(){
+				ShowLoginPanel();
+			});
+		};
+		this.Scroll = function(){
+			var $el=$('#messages').find('.currentChannel');
+			var height = $el[0].scrollHeight;
+			$el.animate({scrollTop: height + "px"}, {queue: false});
+		};
+		this.ShowRegistration = function(){
+			$('#loginPanel').slideUp(function(){
+				$('#registrationPanel').slideDown();
+			});
+		};
+		this.ShowRegistrationStatus = function(status){
+			$('#regStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
+		};
+		this.ShowSignInStatus = function(status){
+			$('#signInStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
+		};
+		this.ShowFileTransferNotification = function(data){
+			$('#from').html(data.from);
+			$('#fileName').html(data.file.name);
+			$('#fileSize').html(data.file.size);
+			$('#fileType').html(data.file.type);
+			$('#calendar').fadeOut();
+			$('#fileTransferNotification').fadeIn();
+		}
+		this.ShowFileTransferStatus = function(filename){
+			$('#fileTransferNotification').fadeOut();
+			$('#calendar').fadeOut();
+			$('#fileTransferStatus').fadeIn();
+			$('#transferFileName').html(filename);
+		}
+		this.UpdateFileTransferProgress = function(bytesWritten,fileSize,speed){
+			var width = $('#progress').width();
+			var barWidth = Math.round((bytesWritten/fileSize)*width);
+			$('#bar').css('width',barWidth+'px');
+			if(speed){
+				$('#transferSpeed').html(speed+' KB/sec');
+			}
+		}
+		this.OpenWindow = function(){
+			$('#overlay').fadeIn();
+			var page = $(this).data('page');
+			$('#'+page).fadeIn();
+		};
+		this.CloseWindow = function(){
+			var page = $(this).closest('.page');
+			$('#overlay').fadeOut(function(){
+				page.fadeOut();
+			});
+		};
+		this.SwitchSettingsPage = function(){
+			var index = $('#settingsDivisionsList').find('li').index(this);
+			var width = $('.settingsDivisionPage').first().width();
+			$('#settingsDivisionsList').find('.activeTabItem').removeClass('activeTabItem');
+			$(this).addClass('activeTabItem');
+			$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false});
+		};
+		this.PeopleTabsSwitch = function(){
+			var index = $('#channelTabs').find('a').index(this);
+			$('.activeTab').removeClass('activeTab activeTabItem');
+			$(this).addClass('activeTab activeTabItem');
+			$('#tabs').animate({scrollLeft:index*400},{queue:false});
+		};
+		this.RenderChannels = function(data){
+			var channels = data.channels;
+			for(var i = 0;i<channels.length;i++){
+				var online = channels[i].online;
+				var name = channels[i].name;
+				var header = channels[i].header;
+				$('#channelsRow').append('<div class="channelListItem" data-channel="'+name+'">'+name+'<span class="channelLeave"></span></div>');
+				$('#messages').append('<div class="channelContainer" data-channel="'+name+'"></div>');
+				ChannelsManager.CurrentSpeakers[name] = '';
+				$('.channelContainer[data-channel='+name+']').append('<div class="channelTopic">'+header+'</div>');
+				if(i===0){
+					ChannelsManager.CurrentChannel = name;
+					$('#channelsRow').children('div').first().addClass('currentChannel activeTabItem');
+					$('.channelContainer').first().addClass('currentChannel');
+					$('#channelOnlineTab').append('<div class="channelOnlineContainer currentChannel" data-channel="'+name+'"></div>');
+				}else{
+					$('#channelOnlineTab').append('<div class="channelOnlineContainer" data-channel="'+name+'"></div>');
+				}
+
+				for(var ii = 0;ii<online.length;ii++){
+					$('.channelOnlineContainer[data-channel='+name+']').append('<div class="user" data-login="'+online[ii]+'">'+online[ii]+'</div>');
+				}
+			}
+		};
+		
+		this.RenderUser = function(user,channel){
+			$('.channelContainer[data-channel='+channel+']').append('<div class="message"><span class="author">'+user+'</span> присоединился к каналу...</div>');
+			$('.channelOnlineContainer[data-channel='+channel+']').append('<div class="user"data-login="'+user+'">'+user+'</div>');
+		}
+		
+		this.RemoveUser = function(user,channel){
+			$('.channelContainer[data-channel="'+channel+'"]').append('<div class="message"><span class="author">'+user+'</span> покинул канал...</div>');
+			$('.channelOnlineContainer[data-channel='+channel+']').children('div[data-login='+user+']').remove();
+		}
+
+		this.RenderChannelsList = function(data){
+			var channels = new Array();
+			data.channels.forEach(function(channel){
+				channels.push('<div class="channel">' + channel.name + '</div>');
+			});
+			$('#channelsList').html(channels.sort().join(''));
+		};
+	};
 	
-	$('body').on('mousedown','#textareaResizer',function(event){
+	var SocketManager = function(){
+		this.OnError = function(){
+			Render.HideLoader();
+			$('#serverOffline').slideDown();
+			setTimeout(function(){SocketManager.ServerConnect(true);}, 20000);
+			console.log('Ошибка соединения');
+		};
+		this.OnConnect = function(){
+			console.log('connected');
+			if(settings.login && settings.hash && settings.autoLogin===true){
+				AuthorizationManager.SignIn();
+			} else {
+				Render.HideLoader();
+				Render.ShowLoginPanel();
+			}
+		};
+		this.OnDisconnect = function(){
+			$('#overlay').fadeIn();
+			$('#channelsRow').children().remove();
+			$('.channelContainer').remove();
+			$('.channelOnlineContainer').remove();
+			$('#messages').children().remove();
+			$('#serverOffline').slideDown();
+			//setTimeout(function(){serverConnect(true);}, 60000);
+			// само коннектится по экспоненте, при раскомменчивании возможно 2 реконнекта
+			console.log('Дисконнект');
+		};
+		this.ServerConnect = function(rc){
+			Render.ShowLoader();
+			if(rc){
+				socket.socket.connect();
+				console.log('reConnecting...');
+			} else {
+				socket = io.connect('http://10.50.101.28:8800/');
+				console.log('connecting...');
+			}
+		}
+	};
+	
+	var SettingsManager = function () {
+		this.GetSettingsObject = function(){
+			var settingsObject;
+			var sPath = __dirname+'\\settings.json';
+			if(!fs.existsSync(sPath)){
+				fs.open(sPath,'w+',function(err, file_handle){
+					fs.writeSync(file_handle,'{}',null,'utf8');
+				});
+				settingsObject = {};
+			} else {
+				var contents = fs.readFileSync(sPath,'utf8');
+				settingsObject = JSON.parse(contents);
+			}
+			return settingsObject;
+		};
+		this.SaveSetting = function(settingName,value){
+			settings[settingName] = value;
+			var string = JSON.stringify(settings);
+			fs.writeFileSync(__dirname+'\\settings.json',string,'utf8');
+		};
+	};
+	
+	
+	var RegistrationManager = function(){
+		this.RegistrationSubmit = function(){
+			function isValidEmailAddress(emailAddress){
+				var pattern = new RegExp(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/);//HTML5 standart based
+				return pattern.test(emailAddress);
+			}
+			var login = Render.GetFieldValue('regLoginField');
+			var password = Render.GetFieldValue('regPasswordField');
+			var mail = Render.GetFieldValue('regEmailField');
+			if(login === '' || password === '' || mail === ''){
+				Render.ShowRegistrationStatus('Надо заполнить полностью!');
+			} else if(password.length<6){
+				Render.ShowRegistrationStatus('Пароль должен быть больше 6 символов!');
+			} else if(!isValidEmailAddress(mail)){
+				Render.ShowRegistrationStatus('Адрес почты некорректен');
+			} else {
+				socket.emit('userRegistration',{'login' : login,'password' : password,'email' : mail});
+			}
+		};
+		this.OnRegistrationSuccess = function(){
+			Render.ShowRegistrationStatus('OK');
+		};
+		this.OnRegistrationFailed = function(){
+			Render.ShowRegistrationStatus('Fail');
+		};
+	};
+	var ProfileManager = function(){
+		this.SaveProfileInfo = function(){
+			var userName = Render.GetFieldValue('userName');
+			var userSurname = Render.GetFieldValue('userSurname');
+			var userBirthday = Render.GetFieldValue('userBirthday');
+			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday});
+		};
+		this.OnAvatarSelect = function(){
+			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png'] }, multiSelect:false, dirSelect:false};
+			var onDialogClose = function(err,files){
+				if(!err){
+					var file = files[0];
+					var type = mime.lookup(file);
+					var stat = fs.statSync(file);
+					var name = path.basename(file);
+					var img = fs.readFileSync(file).toString('base64');
+						$('#hidePhoto').attr('src','data:'+type+';base64,' +img).load(function(){
+							var photo = document.getElementById('hidePhoto');
+							var canvas = document.getElementById('photo');
+							var photoAreaW = 400;
+							var photoAreaH = 400;
+							// size photo area
+							var hW = $('#hidePhoto').width();
+							var hH = $('#hidePhoto').height();
+							// get size of a hidden photo
+							var ctx=canvas.getContext('2d');
+							var ratioW = photoAreaW/hW;
+							var ratioH = photoAreaH/hH;
+							// ratio
+							// где то тут можно использвать Math.max(...)
+							if(hW > photoAreaW || hH > photoAreaH ){
+								var ratio = Math.min(ratioW,ratioH);
+								canvas.width = hW*ratio;
+								canvas.height = hH*ratio;
+							} else {
+								canvas.width = hW;
+								canvas.height = hH;
+							}
+							ctx.drawImage(photo,0,0,canvas.width, canvas.height);
+							var w = $('#photoArea');
+							$('#photo').css('top',(w.height()-$('#photo').height())/2 + 'px');
+							$('#photo').css('left',(w.width()-$('#photo').width())/2 + 'px');
+
+							var dataURL = canvas.toDataURL();
+					});
+				} else {
+					console.log('error in image selection');
+				}
+			};
+			window.frame.openDialog(options,onDialogClose);
+		};
+		this.OnProfileInfoUpdateSuccessful = function(){
+			//
+		};
+
+		this.OnProfileInfoUpdateFailed = function(){
+			//
+		};
+	};
+	var MessageHandler = function(){
+		this.OnMessage = function(data){
+			var channel = data.channel;
+			var dateString = '<span>'+data.date.hours+':'+data.date.mins+'</span>';
+			var authorString = '';
+			var content = data.content;
+			if(data.login === settings.login){
+				authorString='<span class="author me">'+settings.login+'</span>';
+			}else{
+				authorString='<span class="author">'+data.login+'</span>';
+				if(!$('.channelListItem[data-channel='+channel+']').hasClass('currentChannel')){
+					$('.channelListItem[data-channel='+channel+']').addClass('waitTabItem');
+				}
+			}
+			if(data.login === ChannelsManager.CurrentSpeakers[channel]){
+				$('.channelContainer[data-channel='+channel+'] .messageContent').last().append('<br />'+content);
+			}else{
+				$('.channelContainer[data-channel='+channel+']').append('<div class="message"><div class="messageInfo">'
+				+authorString+
+				dateString+'</div><div class="messageContent">'+content+'</div></div>');
+				ChannelsManager.CurrentSpeakers[channel]=data.login;
+			}
+			Render.Scroll();
+		};
+		this.SendMessage = function(){
+			var message=Render.GetMessageFiledValue();
+			$('#messageField').focus();
+			if(message !== ''){
+				Render.SetMessageFieldValue('');
+				socket.emit('message',{content:message,channel:ChannelsManager.CurrentChannel});
+			}
+		};
+		this.ReferToUser = function(){
+			var name = $(this).text();
+			if(name !== settings.login){
+				var message = Render.GetMessageFiledValue();
+				if(message){
+					Render.SetMessageFieldValue(message + ' ' + name);
+				} else {
+					Render.SetMessageFieldValue(name + ' ');
+				}
+			} else return false;
+		};
+	};
+	
+	var Handler = function() {
+	this.OnMessageFieldResize = {};
+	this.OnMessageFieldResize.MouseDown = function(event){
 		var mouseStart = event.pageY;
 		var tH = $('#messageField').height();
 		$('body').mousemove(function(e){
 			var h = tH + (mouseStart-e.pageY);
 			if( h >= 36 && h <= 200 ){
 				$('#messageField').height(h);
-				$('#messages').css("padding-bottom",100+h);
-				 
+				$('#messages').css('padding-bottom',100+h);
 				var $el=$('#messages').find('.currentChannel');
 				var height = $el[0].scrollHeight;
-				$el.animate({scrollTop: height + "px"}, 0);
+				$el.css({scrollTop: height + "px"});
 			}
 		});
-	}).mouseup(function(){
-		$('body').unbind('mousemove');
-    }).mouseleave(function(){
-		$('body').unbind('mousemove');
-	});
+		};
+		this.OnMessageFieldResize.MouseUp = function(){
+			$('body').unbind('mousemove');
+		};
+		this.OnMessageFieldResize.MouseLeave = function(){
+			$('body').unbind('mousemove');
+		};
+	};
 	
-	$(document).on('click', function(e){
-		if ($(e.target).closest('#settingsButton').length !== 0){
-			$('#contextmenu').show().css({
-				left:e.pageX,
-				top:e.pageY
-			});
-		} else {
-			$("#contextmenu").hide();
-		}
-	});
-
-	
-	function serverConnect(rc) {
-		$('#loader').fadeIn();
-		if(rc){
-			socket.socket.connect();
-			console.log('reConnecting...');
-		} else {
-			socket = io.connect('http://10.50.101.28:8800/');
-			console.log('connecting...');
-		}
-	}
-	
-	serverConnect();
-	
-socket.on('connect', function(){
-	
-	var currentChannel = '';
-	var currentSpeakers = [];
-	
-/*		Настройки		*/
-
-	var settings = getSettingsObject();
-	
-	function getSettingsObject(){
-		var settingsObject;
-		var sPath = __dirname+'\\settings.json';
-		if(!fs.existsSync(sPath)){
-			fs.open(sPath,'w+',function(err, file_handle){
-				fs.writeSync(file_handle,'{}',null,'utf8');
-			});
-			settingsObject = {}
-		} else {
-			var contents = fs.readFileSync(sPath,'utf8');
-			settingsObject = JSON.parse(contents);
-		}
-		return settingsObject;
-	}
-	
-	function saveSetting(settingName,value){
-		settings[settingName] = value;
-		var string = JSON.stringify(settings);
-		fs.writeFileSync(__dirname+'\\settings.json',string,'utf8');
-	}
-	
-/*		Настройки - Конец		*/
-	
-	
-/*		Эффекты		*/
-
-	function scroll() {
-		var $el=$('#messages').find('.currentChannel');
-		var height = $el[0].scrollHeight;
-		$el.animate({scrollTop: height + "px"}, {queue: false});
-	}
-	
-	function showLoader(){
-		$('#loader').fadeIn();
-	}
-	
-	function hideLoader(){
-		$('#loader').fadeOut();
-	}
-	
-/*		Эффекты - Конец		*/
-
-
-/*			Регистрация			*/
-
-	function showRegistration(){
-		$('#loginPanel').slideUp(function(){
-			$('#registrationPanel').slideDown();
-		});
-	}
-	
-	function isValidEmailAddress(emailAddress) {
-		var pattern = new RegExp(/^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i);
-		return pattern.test(emailAddress);
-    }
-
-	function regSubmit() {
-		var login = $('#regLoginField').val();
-		var password = $('#regPasswordField').val();
-		var mail = $('#regEmailField').val();		
-		if(login == '' || password == '' || mail == ''){
-			$('#regStatus').html('Надо заполнить полностью!').fadeIn().delay(1000).fadeOut(2000);
-		} else if(password.length<6){
-			$('#regStatus').html('Пароль должен быть больше 6 символов!').fadeIn().fadeOut(2000);
-		} else if(!isValidEmailAddress(mail)){
-			$('#regStatus').html('Адрес почты некорректен').fadeIn().delay(1000).fadeOut(2000);
-		} else {
-			socket.emit('userRegistration',{'login' : login,'password' : password,'email' : mail});
-		}
-	}
-	
-	function onRegistrationSuccess(data){
-		$('#regStatus').html('OK').fadeIn().delay(1000).fadeOut(2000);		
-	}
-	
-	function onRegistrationFailed(){
-		$('#regStatus').html('Fail').fadeIn().delay(1000).fadeOut(2000);
-	}
-	
-/*			Регистрация - Конец			*/
-
-
-/*			Профиль			*/
-
-	function saveProfileInfo(){
-		var userName = $('#userName').val();
-		var userSurname = $('#userSurname').val();
-		var userBirthday = $('#userBirthday').val();
-		socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday});
-	}
-	
-	$('#avatarSelector').click(function(){
-		window.frame.openDialog({
-			type:'open',
-			acceptTypes: { Images:['*.jpg','*.png'] },
-			multiSelect:false,
-			dirSelect:false
-		},function(err,files){
-			if(!err){
-				var file = files[0];
-				var type = mime.lookup(file);
-				var stat = fs.statSync(file);
-				var name = path.basename(file);
-				var img = fs.readFileSync(file).toString('base64');
-					$('#hidePhoto').attr('src','data:'+type+';base64,' +img).load(function(){
-						var photo = document.getElementById('hidePhoto');
-						
-						var canvas=document.getElementById('photo');
-						
-						var photoAreaW = 400;
-						var photoAreaH = 400;
-						// size photo area
-						
-						var hW = $('#hidePhoto').width();
-						var hH = $('#hidePhoto').height();
-						// get size of a hidden photo
-						
-						var ctx=canvas.getContext('2d');
-
-						var ratioW = photoAreaW/hW;
-						var ratioH = photoAreaH/hH;
-						// ratio
-						// где то тут можно использвать Math.max(...)
-						if(hW > photoAreaW || hH > photoAreaH ){
-						
-							var ratio = Math.min(ratioW,ratioH);
-
-							canvas.width = hW*ratio;
-							canvas.height = hH*ratio;
-						} else {
-							canvas.width = hW;
-							canvas.height = hH;
-						}
-						
-						ctx.drawImage(photo,0,0,canvas.width, canvas.height);
-						
-						var w = $('#photoArea');
-						$('#photo').css('top',(w.height()-$('#photo').height())/2 + 'px');
-						$('#photo').css('left',(w.width()-$('#photo').width())/2 + 'px');
-						
-						var dataURL = canvas.toDataURL();
-				});	
-			} else {
-				console.log('error in image selection');
-			}
-		});
-	});
-	
-/*			Профиль - Конец			*/
-
-
-/*			Сообщения			*/
-
-	function handleMessage(data){
-		var channel=data.channel; 
-		var dateString='<span>'+data.date.hours+':'+data.date.mins+'</span>';
-		var content=data.content;
-		if(data.login===settings.login){
-			var authorString='<span class="author me">'+settings.login+'</span>';
-		}else{
-			var authorString='<span class="author">'+data.login+'</span>';
-			if(!$('.channelListItem[data-channel='+channel+']').hasClass('currentChannel')){
-				$('.channelListItem[data-channel='+channel+']').addClass('waitTabItem');
-			}
-		}
-		if(data.login===currentSpeakers[channel]){
-			$('.channelContainer[data-channel='+channel+'] .messageContent').last().append('<br />'+content);
-		}else{
-			$('.channelContainer[data-channel='+channel+']').append('<div class="message"><div class="messageInfo">'
-			+authorString+dateString+'</div><div class="messageContent">'+content+'</div></div>');
-			currentSpeakers[channel]=data.login;
-		}
-		scroll();
-	}
-	
-	function submitMessage(){
-		var message=$('#messageField').val();
-		$('#messageField').focus();
-		if(message !== ''){
-			$('#messageField').val('');
-			socket.emit('message',{content:message,channel:currentChannel});
-		}
-	}
-	
-	function fromUser(){
-		var name = $(this).text();
-		if(name !== settings.login){
-			var message = $('#messageField').val();
-			if(message){
-				$('#messageField').val(message + ' ' + name);
-			} else {
-				$('#messageField').val(name + ' ');
-			}
-		} else return false;
-	}
-
-/*			Сообщения - Конец			*/
-	
-	
-/*			Авторизация			*/
-
-	$('#loginField').val(settings.login);
-	$('#autoLogin').prop('checked', settings.autoLogin);
-	
-	if(settings.login && settings.hash && settings.autoLogin===true){
-		signIn();
-	} else {
-		hideLoader();
-		$('#loginPanel').slideDown();
-	}
-
-	function signIn() {
-		if($('#passwordField').val()!=''){
-			showLoader();
-			settings.login = $('#loginField').val();
-			var password = $('#passwordField').val();
-			saveSetting('login',settings.login);
-			settings.autoLogin = $('#autoLogin').prop('checked');
-			saveSetting('autoLogin',settings.autoLogin);
-			socket.emit('login',{login:settings.login,password:password});
-		} else if(settings.login && settings.hash && settings.autoLogin===true){
-			socket.emit('login',{login:settings.login,hash:settings.hash});
-		} else {
-			$('#signInStatus').html('Заполнено не все').fadeIn().delay(1000).fadeOut(2000);
-		}
-	}
-	
-	function loginError(error){
-		$('#loginPanel').slideDown();
-		hideLoader();
-		$('#signInStatus').html(error).fadeIn().delay(1000).fadeOut(3000);
-	}
-	
-	function onLoginSuccess(data){
-		$('#userBar').html(settings.login);
-		$('#overlay').fadeOut();
-		$('#signInStatus').removeClass().html('').hide();
-		$('#loginPanel').fadeOut();
-		$('#serverOffline').fadeOut();
-		$('#pageContainer').fadeIn();
-		$('#userName').val(data.profileInfo.name);
-		$('#userSurname').val(data.profileInfo.surname);
-		$('#userBirthday').val(data.profileInfo.birthday);
+	var ChannelsManager = function(){
+		this.CurrentChannel = '';
+		this.CurrentSpeakers = [];
 		
-		if(data.hash && settings.autoLogin===true) saveSetting('hash',data.hash);
-	}
-	
-	function onLoginFinish(){
-		hideLoader();
-	}
-	
-	function showSignInForm(){
-		$('#registrationPanel').slideUp(function(){
-			$('#loginPanel').slideDown();
-		});
-	}
-	
-	function logOut(){
-		$('#overlay').fadeIn();
-		$('#loginPanel').fadeIn();
-		$('#channelsRow').children().remove();
-		$('.channelContainer').remove();
-		$('.channelOnlineContainer').remove();
-		$('#messages').children().remove();
-		$('#autoLogin').removeAttr('checked');
-		saveSetting('hash','');
-		saveSetting('autoLogin','');
-		socket.emit('logOut');
-	}
-	
-/*			Авторизация - Конец			*/
-
-
-/*			Действия			*/
-	
-	function openWindow(){
-		$('#overlay').fadeIn();
-		var page = $(this).data('page');
-		$('#'+page).fadeIn();
-	}
-	
-	function closeWindow(){
-		var page = $(this).closest('.page');
-		$('#overlay').fadeOut(function(){
-			page.fadeOut();
-		});
-	}
-
-	function settingsListClick(){
-		var index = $('#settingsDivisionsList li').index(this);
-		var width = $('.settingsDivisionPage').first().width();
-		$('#settingsDivisionsList').find('.activeTabItem').removeClass('activeTabItem');
-		$(this).addClass('activeTabItem');
-		$('#settingsDivisionsPages').animate({scrollLeft:index*width},{queue:false});
-	}
-	
-/*			Действия - Конец			*/	
-
-
-/*			Каналы			*/
-
-	function parseChannel(data){
-		var channels = data.channels;
-		for(var i = 0;i<channels.length;i++){
-			var online = channels[i].online;
-			var name = channels[i].name;
-			var header = channels[i].header;
-			
-			$('#channelsRow').append('<div class="channelListItem" data-channel="'+name+'">'+name+'<span class="channelLeave"></span></div>');
-			$('#messages').append('<div class="channelContainer" data-channel="'+name+'"></div>');
-			currentSpeakers[name] = '';
-			$('.channelContainer[data-channel='+name+']').append('<div class="channelTopic">'+header+'</div>');
-		
-			if(i===0){
-				currentChannel = name;
-				$('#channelsRow').children('div').first().addClass('currentChannel activeTabItem');
-				$('.channelContainer').first().addClass('currentChannel');
-				$('#channelOnlineTab').append('<div class="channelOnlineContainer currentChannel" data-channel="'+name+'"></div>');
+		this.GetChannelsList = function(){
+			socket.emit('getChannels');
+		};
+		this.JoinChannel = function(){
+			var name = $(this).html();
+			socket.emit('channelJoin',{login:settings.login,channel:name});
+		};
+		this.AddChannel = function(){
+			var name = $('#addChannelField').val();
+			if(name.length >= 3){
+				$('#addChannelField').val('');
+				socket.emit('createChannel',{channel:name});
 			}else{
-				$('#channelOnlineTab').append('<div class="channelOnlineContainer" data-channel="'+name+'"></div>');
+				// добавить предупреждение
 			}
-			
-			for(var ii = 0;ii<online.length;ii++){
-				$('.channelOnlineContainer[data-channel='+name+']').append('<div class="user" data-login="'+online[ii]+'">'+online[ii]+'</div>');
+		};
+		this.CreatePrivateChannel = function(data){
+			console.log('create private channel fire');
+			var user = $(this).attr('data-login');
+			if(settings.login !== user){
+				var chName = [settings.login, user].sort().join('');
+				if($('.channelListItem[data-channel='+chName+']').length){
+					$('.channelListItem[data-channel='+chName+']').click();
+				} else {
+					socket.emit('createPrivateChannel',{to:user,name:chName});
+					$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
+					$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
+					$('.channelListItem[data-channel='+chName+']').click();
+				}
 			}
-		}
-	}
-	
-	function getChannels(){
-		socket.emit('getChannels');
-	}
-	
-	function channelsList(data){
-	var channels = '';
-		data.channels.forEach(function(channel){
-			channels += '<div class="channel">' + channel.name + '</div>';
-		});
-		$('#channelsList').html(channels);
-	}
-	
-	function addChannel(){
-		var name = $('#addChannelField').val();
-		if(name.length >= 3){
-			$('#addChannelField').val('');
-			socket.emit('createChannel',{channel:name});
-		}else{
-			// добавить предупреждение
-		}
-	}
-	
-	function joinChannel(){
-		var name = $(this).html();
-		socket.emit('channelJoin',{login:settings.login,channel:name});
-	}
-
-	function createPrivateChannel(data){
-		var user = $(this).attr('data-login');
-		
-		if(settings.login !== user){				
-			var chName = [settings.login, user].sort().join("");				
-			if($('.channelListItem[data-channel='+chName+']').length){
-				$('.channelListItem[data-channel='+chName+']').click();
-			} else {
-				socket.emit('createPrivateChannel',{to:user,name:chName});
-					
-				$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
-				$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
-				$('.channelListItem[data-channel='+chName+']').click();
+		};
+		this.GetPrivateChannel = function(data){
+			if(!$('.channelListItem[data-channel='+data.name+']').length){
+				$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
+				$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
 			}
-		}
-	}
-	
-	function getPrivateChannel(data){
-		if(!$('.channelListItem[data-channel='+data.name+']').length){
-			$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+data.name+'">'+data.from+'<span class="channelLeave"></span></div>');
-			$('#messages').append('<div class="channelContainer" data-channel="'+data.name+'"></div>');
-		}
-	}
-
-	function channelClick(){
-		$('div.channelContainer[data-channel='+currentChannel+']').hide();
-		$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
-		
-		currentChannel = $(this).attr("data-channel");
-		
-		$('.currentChannel').removeClass('currentChannel activeTabItem');
-		$('div.channelContainer[data-channel='+currentChannel+']').addClass('currentChannel').show();
-		$('.channelOnlineContainer[data-channel='+currentChannel+']').addClass('currentChannel').show();
-		$('.channelListItem[data-channel='+currentChannel+']').removeClass('waitTabItem').addClass('currentChannel activeTabItem');
-	}
-	
-	function channelLeave(){
-		var channel = $(this).parent().attr('data-channel');
-		socket.emit('channelLeave',{channel:channel});
-		if($(this).parent('.channelListItem').next().length){
-			$(this).parent('.channelListItem').next().click();
-		}else{
-			$(this).parent('.channelListItem').prev().click();
-		}
-		$('*[data-channel='+channel+']').remove();		
-	}
-	
-	function handleUserJoin(data){
-		var channel = data.channel;
-		var user = data.login;
-		$('.channelContainer[data-channel='+channel+']').append('<div class="message"><span class="author">'+user+'</span> присоединился к каналу...</div>');
-		$('.channelOnlineContainer[data-channel='+channel+']').append('<div class="user "data-login="'+user+'">'+user+'</div>');
-		scroll();
-		currentSpeakers[channel]='';
-	}
-	
-	function handleUserLeave(data){
-		var channel = data.channel;  
-		if(channel !== ''){
+		};
+		this.OnChannelSwitch = function(){
+			var currentChannel = ChannelsManager.CurrentChannel;
+			var newChannel = $(this).attr('data-channel');			
+			$('div.channelContainer[data-channel='+currentChannel+']').hide();
+			$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
+			console.log(currentChannel,newChannel);
+			$('.currentChannel').removeClass('currentChannel activeTabItem');
+			$('div.channelContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
+			$('.channelOnlineContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
+			$('.channelListItem[data-channel='+newChannel+']').addClass('currentChannel activeTabItem').removeClass('waitTabItem');
+			ChannelsManager.CurrentChannel = newChannel;
+		};
+		this.OnChannelLeave = function(){
+			var channel = $(this).parent('.currentChannel').attr('data-channel');
+			var channelItem = $(this).parent('.currentChannel');
+			if(channelItem.next().length){
+				channelItem.next().click();
+			}else{
+				channelItem.prev().click();
+			}
+			$('*[data-channel='+channel+']').remove();
+			socket.emit('channelLeave',{channel:channel});
+		};
+		this.OnUserJoin = function(data){
 			var user = data.login;
-			$('.channelContainer[data-channel="'+channel+'"]').append('<div class="message"><span class="author">'+user+'</span> покинул канал...</div>');
-			$('.channelOnlineContainer[data-channel='+channel+']').children('div[data-login='+user+']').remove();
+			var channel = data.channel;
+			Render.RenderUser(user,channel);
+			Render.Scroll();
+			ChannelsManager.CurrentSpeakers[channel]='';
+		};
+		this.OnUserLeave = function(data){
+			var channel = data.channel;
+			if(channel !== ''){
+				var user = data.login;
+				Render.RemoveUser(user,channel);
+			}
+			Render.Scroll();
+			ChannelsManager.CurrentSpeakers[channel]='';
+		};
+	};
+	
+	var AuthorizationManager = function(){
+		this.SignIn = function(){
+			if(Render.GetFieldValue('passwordField') !== ''){
+				Render.ShowLoader();
+				settings.login = Render.GetFieldValue('loginField');
+				var password = Render.GetFieldValue('passwordField');
+				SettingsManager.SaveSetting('login',settings.login);
+				settings.autoLogin = $('#autoLogin').prop('checked');
+				SettingsManager.SaveSetting('autoLogin',settings.autoLogin);
+				socket.emit('login',{login:settings.login,password:password});
+			} else if(settings.login && settings.hash && settings.autoLogin===true){
+				socket.emit('login',{login:settings.login,hash:settings.hash});
+			} else {
+				Render.ShowSignInStatus('Заполнено не все');
+			}
+		};
+		this.SignOut = function(){
+			Render.ShowOverlay();
+			Render.ShowLoginPanel();
+			$('#channelsRow').children().remove();
+			$('.channelContainer').remove();
+			$('.channelOnlineContainer').remove();
+			$('#messages').children().remove();
+			$('#autoLogin').removeAttr('checked');
+			SettingsManager.SaveSetting('hash','');
+			SettingsManager.SaveSetting('autoLogin','');
+			socket.emit('logOut');
+			$('#loginField').val(settings.login);
+			$('#autoLogin').prop('checked', settings.autoLogin);
+		};
+		this.OnLoginSuccess = function(data){
+			$('#userBar').html(settings.login);
+			Render.HideOverlay();
+			$('#signInStatus').removeClass().html('').hide();
+			Render.HideLoginPanel();
+			$('#serverOffline').fadeOut();
+			$('#pageContainer').fadeIn();
+			$('#userName').val(data.profileInfo.name);
+			$('#userSurname').val(data.profileInfo.surname);
+			$('#userBirthday').val(data.profileInfo.birthday);
+			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
+		};
+		this.OnLoginFinish = function(){
+			Render.HideLoader();
+		};
+		this.OnLoginError = function(error){
+			Render.ShowLoginPanel();
+			Render.HideLoader();
+			Render.ShowSignInStatus(error);
+		};
+	};
+	
+	var FileTransferManager = function(){
+		this.SelectedUser = '';
+		this.File = new Object();
+		this.SendRequest = function(){
+			var to = FileTransferManager.SelectedUser;
+			var dialogOptions = {
+				type:'open',
+				acceptTypes:{All:['*.*']},
+				multiSelect:false,
+				dirSelect:false
+			}
+			var onFileSelected = function(err,files){
+				if(!err){
+					var file = files[0];
+					var stat = fs.statSync(file);
+					FileTransferManager.File.Path = file;
+					FileTransferManager.File.Size = stat.size;
+					FileTransferManager.File.Name = path.basename(file);
+					FileTransferManager.File.Type = mime.lookup(file);					
+					console.log(FileTransferManager.File);
+					socket.emit('sendFileRequest',{
+						to:to,
+						file:{
+							name:FileTransferManager.File.Name,
+							size:FileTransferManager.File.Size,
+							type:FileTransferManager.File.Type
+						}
+					});
+				}
+			}
+			window.frame.openDialog(dialogOptions,onFileSelected);
 		}
-		scroll();
-		currentSpeakers[channel]='';
+		this.OnRequest = function(data){
+			Render.ShowFileTransferNotification(data);
+			FileTransferManager.File.From = data.from;
+			FileTransferManager.File.Name = data.file.name;
+			FileTransferManager.File.Size = data.file.size;
+			FileTransferManager.File.Type = data.file.type;
+			
+			console.log(FileTransferManager.File);
+		}
+		this.AcceptFile = function(){
+			
+			var dialogOptions = {
+				type:'save',
+				acceptTypes:{All:['*.*']},
+				initialValue:FileTransferManager.File.Name,
+				multiSelect:false,
+				dirSelect:false
+			}
+			var onFileSelected = function(err,file){
+				if(!err){
+					FileTransferManager.File.Path = file;
+					console.log('file accepted');
+					Render.ShowFileTransferStatus(FileTransferManager.File.Name);
+					socket.emit('fileAccepted',{from:FileTransferManager.File.From});
+				}
+			}				
+			window.frame.openDialog(dialogOptions,onFileSelected);
+		}
+		this.OnFileAccepted = function(){
+			Render.ShowFileTransferStatus();
+			Render.ShowFileTransferStatus(FileTransferManager.File.Name);
+			var filePath = FileTransferManager.File.Path;
+			console.log(filePath);
+			var fileSize = fs.statSync(filePath).size;
+			var fileServer = child_process.fork(__dirname+'\\content\\js\\workers\\fileServer.js',{env:{filePath:filePath},silent:true});
+			fileServer.on('message',function(message){
+				if(message.type === 'serverReady'){
+					socket.emit('fileServerStarted');
+					console.log('fileServerStarted');
+				}else if(message.type === 'progressUpdate'){
+					Render.UpdateFileTransferProgress(message.bytesWritten,fileSize,message.speed);
+				}else if(message.type === 'workerExit'){
+					Render.UpdateFileTransferProgress(message.bytesWritten,fileSize);
+					console.log('transfer complete');
+					socket.emit('transferComplete');
+				}
+			});
+			fileServer.on('exit',function(){
+				console.log('child exited'+(new Date().getTime()));
+			});
+			fileServer.stderr.on('data',function(data){
+				console.log(data.toString());
+				console.log('error in child');
+			});
+			$('#cancelTransfer').one(function(){
+				fileServer.kill();
+				console.log('cancelTransfer event');
+				socket.emit('transferComplete');
+			});
+		}
+		this.OnFileServerStarted = function(data){
+			Render.ShowFileTransferStatus();
+			var filePath = FileTransferManager.File.Path;
+			var fileSize = FileTransferManager.File.Size;
+			var fileSocket = child_process.fork(__dirname+'\\content\\js\\workers\\fileSocket.js',{env:{filePath:filePath,serverAddress:data.ip},silent:true});
+			fileSocket.on('message',function(message){
+				if(message.type === 'serverConnectionEstablished'){
+					console.log('connected to sender');
+				}else if(message.type === 'progressUpdate'){
+					Render.UpdateFileTransferProgress(message.bytesRead,fileSize,message.speed);
+				}else if(message.type === 'workerExit'){
+					Render.UpdateFileTransferProgress(message.bytesRead,fileSize);
+					console.log('transfer complete');
+					socket.emit('transferComplete');
+				}else if(message.type === 'error'){
+					console.log(message.err);
+				}
+			});
+			function cleanOnCancel(path){
+				fs.unlink(path,function(err){
+					if(!err){
+						console.log('clean up done');
+					}
+				})
+			}
+			fileSocket.on('exit',function(){
+				console.log('child exited'+(new Date().getTime()));
+				if(fileSize > fs.statSync(filePath).size){
+					cleanOnCancel(filePath);
+				}
+			});
+			fileSocket.stderr.on('data',function(data){
+				console.log(data.toString());
+				console.log('error in child');
+			});
+			$('#cancelTransfer').one(function(){
+				if(fileSocket){
+					$(this).attr('disabled','disabled');
+					fileSocket.kill();
+					socket.emit('transferComplete');
+				}
+			});
+		}
 	}
 	
-	function tabSwitch(){
-		var index = $('#channelTabs a').index(this);
-		$('.activeTab').removeClass('activeTab activeTabItem');
-		$(this).addClass('activeTab activeTabItem');
-		$('#tabs').animate({scrollLeft:index*400},{queue:false});
-	}
+	var SettingsManager = new  SettingsManager();
+	var settings = SettingsManager.GetSettingsObject();
+	var Render = new Render(window);
+	var MessageHandler = new MessageHandler();
+	var AuthorizationManager = new AuthorizationManager();
+	var ChannelsManager = new ChannelsManager();
+	var SocketManager = new SocketManager();
+	var ProfileManager = new ProfileManager();
+	var RegistrationManager = new RegistrationManager();
+	var Handler = new Handler();
+	var FileTransferManager = new FileTransferManager();
+	var socket;	
+		SocketManager.ServerConnect();
+		
+	socket.on('loginSuccessful',AuthorizationManager.OnLoginSuccess);
+	socket.on('registrationSuccessful',RegistrationManager.OnRegistrationSuccess);
+	socket.on('registrationFailed',	RegistrationManager.OnRegistrationFailed);
+	socket.on('profileInfoUpdateSuccessful',ProfileManager.OnProfileInfoUpdateSuccessful);
+	socket.on('profileInfoUpdateFailed',ProfileManager.OnProfileInfoUpdateFailed);
+	socket.on('loginError',AuthorizationManager.OnLoginError);
+	socket.on('message',MessageHandler.OnMessage);
+	socket.on('userJoined',ChannelsManager.OnUserJoin);
+	socket.on('userLeaved',ChannelsManager.OnUserLeave);
+	socket.on('sendChannel',Render.RenderChannels);
+	socket.on('loginProcedureFinish',AuthorizationManager.OnLoginFinish);
+	socket.on('allChannels',Render.RenderChannelsList);
+	socket.on('privateChannel',ChannelsManager.GetPrivateChannel);
+	socket.on('connect', SocketManager.OnConnect);
+	socket.on('sendFileRequest',FileTransferManager.OnRequest);
+	socket.on('fileAccepted',FileTransferManager.OnFileAccepted);
+	socket.on('fileServerStarted',FileTransferManager.OnFileServerStarted);
+	$('body').on('contextmenu',Render.ShowContextMenu);
+	$('body').on('mousedown', '#textareaResizer', Handler.OnMessageFieldResize.MouseDown);
+	$('body').on('mouseup',Handler.OnMessageFieldResize.MouseUp);
+	$('body').on('mouseleave', Handler.OnMessageFieldResize.MouseLeave);
+	$('[data-action=open]').click(Render.OpenWindow);
+	$('[data-action=close]').click(Render.CloseWindow);
+	$('[data-page=channels]').click(ChannelsManager.GetChannelsList);
+	$('#profileSave').click(ProfileManager.SaveProfileInfo);
+	$('#settingsDivisionsList li').click(Render.SwitchSettingsPage);
+	$('#sendMessage').click(MessageHandler.SendMessage);
+	$('#messageField').keypress(function (e){if(e.which === 13){MessageHandler.submitMessage();	return false;}});
+	$('#channelsList').on('dblclick','.channel',ChannelsManager.JoinChannel);
+	$('#rightColumnHeader').on('click', '.channelListItem',ChannelsManager.OnChannelSwitch);
+	$('#rightColumnHeader').on('click', '.channelLeave',ChannelsManager.OnChannelLeave);
+	$('#channelTabs').on('click', 'a', Render.PeopleTabsSwitch);
+	$('#createChannel').on('click', Render.addChannel);
+	$('#signIn').on('click', AuthorizationManager.SignIn);
+	$('#registration').on('click',Render.ShowRegistration);
+	$('#showLoginPanel').on('click',Render.ShowSignInForm);
+	$('#regSubmit').on('click',Handler.RegistrationSubmit);
+	$('#messages').on('click', '.author',MessageHandler.ReferToUser);
+	$('#tabsWrapper').on('dblclick', '.user',ChannelsManager.CreatePrivateChannel);
+	$('#logOut').on('click',AuthorizationManager.SignOut);
+	$('#sendFile').click(FileTransferManager.SendRequest);
+	$('#fileAccept').click(FileTransferManager.AcceptFile);
+	$(document).on('click',Render.ShowContextMenu);
 	
-/*			Каналы - Конец			*/
+	var date = new Date();
+	var monthes = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','ноября','декабря'];
+	var weekDays = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+	$('#calendar').html('Сегодня '+date.getDate()+'.'+monthes[date.getMonth()-1]+'.'+date.getFullYear()+' года, '+weekDays[date.getDay()-1]);
 	
-	
-/*			События			*/
-
-	socket.on('loginSuccessful',onLoginSuccess);
-	socket.on('registrationSuccessful',onRegistrationSuccess);
-	socket.on('registrationFailed',onRegistrationFailed);
-	socket.on('profileInfoUpdateSuccessful');
-	socket.on('profileInfoUpdateFailed');
-	socket.on('loginError',loginError);
-	socket.on('message',handleMessage);
-	socket.on('userJoined',handleUserJoin);
-	socket.on('userLeaved',handleUserLeave);
-	socket.on('sendChannel',parseChannel);
-	socket.on('loginProcedureFinish',onLoginFinish);
-	socket.on('allChannels',channelsList);
-	socket.on('privateChannel',getPrivateChannel);
-	$('[data-action=open]').click(openWindow);
-	$('[data-action=close]').click(closeWindow);
-	$('[data-page=channels]').click(getChannels);
-	$('#profileSave').click(saveProfileInfo);
-	$('#settingsDivisionsList li').click(settingsListClick);
-	$('#sendMessage').click(submitMessage);
-	$('#messageField').keypress(function(e){if(e.which===13){submitMessage();return false;}});
-	$('.channel').live('dblclick',joinChannel);
-	$('#rightColumnHeader').on('click','.channelListItem',channelClick);	
-	$('#rightColumnHeader').on('click','.channelLeave',channelLeave);
-	$('#channelTabs').on('click','a',tabSwitch);
-	$('#createChannel').on('click',addChannel);
-	$('#signIn').on('click',signIn);
-	$('#registration').on('click',showRegistration);
-	$('#showLoginPanel').on('click',showSignInForm);
-	$('#regSubmit').on('click',regSubmit);
-	$('#messages').on('click','.author',fromUser);
-	$('#tabsWrapper').on('dblclick','.user',createPrivateChannel);
-	$('#logOut').on('click',logOut);
-	
-/*		События	- Конец		*/
-	
-});
-	socket.on('error', function(){
-		$('#loader').fadeOut();
-		$('#serverOffline').slideDown();
-		setTimeout(function(){serverConnect(true);}, 20000);
-		console.log('Ошибка соединения');
-	});
-	socket.on('disconnect', function(){
-		$('#overlay').fadeIn();
-		$('#channelsRow').children().remove();
-		$('.channelContainer').remove();
-		$('.channelOnlineContainer').remove();
-		$('#messages').children().remove();
-		$('#serverOffline').slideDown();
-		//setTimeout(function(){serverConnect(true);}, 60000);
-		// само коннектится по экспоненте, при раскомменчивании возможно 2 реконнекта
-		console.log('Дисконнект');
-	});
 });

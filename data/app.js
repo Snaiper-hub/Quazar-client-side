@@ -28,7 +28,8 @@ var statusIcon = app.createStatusIcon({
 var window = app.createWindow({
 	width: 800,
 	height: 700,
-	icons: __dirname + '/content/icons',
+	icons: __dirname + '/content/icons'
+	//showChrome     : false
 	/***************************** defaults ********************************
 	 * url            : 'http://appjs', // serve static file root and routers
 	 * autoResize     : false,          // resizes in response to html content

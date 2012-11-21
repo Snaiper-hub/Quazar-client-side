@@ -5,13 +5,13 @@
 		<title>Quazar</title>
 		<link rel="stylesheet" href="css/reset.min.css">
 		<link rel="stylesheet" href="css/style.css">
-		<script src="js/jquery-1.8.2.min.js"></script>
+		<script src="js/jquery-1.8.3.min.js"></script>
 		<script src="js/socket.io.min.js"></script>
 		<script src="js/client.js"></script>
 	</head>
 	<body>
 	<div id="loader"><div id="loaderInner"></div></div>
-	<div id="contextmenu"><div data-action="open" data-page="channels">Каналы</div><div data-action="open" data-page="settings">Настройки</div><div id="logOut">Выйти</div></div>
+	<div id="userContextMenu"><div id="sendFile">Отправить файл</div><div id="getUserInfo">Показать информацию</div><div id="referToUser">Обратиться в чате</div></div>
 		<div id="overlay">
 			<div id="serverOffline">
 				<h3>Сервер недоступен.</h3>
@@ -94,7 +94,16 @@
 		</div>
 		<div id="pageContainer">
 			<div id="leftColumn">
-				<div id="leftColumnHeader"><h1 id="userBar" data-action="open" data-page="profile"></h1><button id="settingsButton"></button></div>
+				<div id="leftColumnHeader">
+					<h1 id="userBar" data-action="open" data-page="profile"></h1>
+					<div id="menu">
+						<div id="menuWrapper">
+							<div id="logOut">Выйти</div>
+							<div data-action="open" data-page="channels">Каналы</div>
+							<div data-action="open" data-page="settings">Настройки</div>
+						</div>
+					</div>
+				</div>
 				<div id="channelTabs">
 					<a href="#" id="friendsTabLink" class="activeTab activeTabItem" title="Друзья">Друзья</a>
 					<a href="#" id="channelOnlineTabLink" title="Кто на канале">На канале</a>
@@ -120,7 +129,27 @@
 					<button id="sendMessage">Отправить</button>
 				</div>
 			</div>
-			<div id="statusBar"></div>
+			<div id="statusBar">
+				<div id="calendar"></div>
+				<div id="fileTransferNotification">
+					<div id="fileAccept"></div>
+					<div class="toolTip">Принять файл?</div>
+					<div id="fileCancel"></div>
+					<div id="fileInfo">
+						<div id="from">biohazard707</div>
+						<div id="fileName">how_to_make_life_easier.avi</div>
+						<div id="fileSize">304 MB</div>
+						<div id="fileType">Video</div>
+					</div>
+				</div>
+				<div id="fileTransferStatus">
+					<div id="progress"><div id="bar"></div></div><div id="cancelTransfer"></div>
+					<div id="transferInfo">
+						<div id="transferFileName"></div>
+						<div id="transferSpeed"></div>
+					</div>
+				</div>
+			</div>
 		</div>		
 	</body>
 </html>
