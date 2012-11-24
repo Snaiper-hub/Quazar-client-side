@@ -254,7 +254,9 @@ $(window).on('app-ready',function(){
 			var userName = Render.GetFieldValue('userName');
 			var userSurname = Render.GetFieldValue('userSurname');
 			var userBirthday = Render.GetFieldValue('userBirthday');
-			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday});
+			var userPhoto = document.getElementById('photo').toDataURL();
+			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto});
+			Render.HideOverlay();
 		};
 		this.OnAvatarSelect = function(){
 			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png'] }, multiSelect:false, dirSelect:false};
@@ -278,7 +280,6 @@ $(window).on('app-ready',function(){
 							var ratioW = photoAreaW/hW;
 							var ratioH = photoAreaH/hH;
 							// ratio
-							// где то тут можно использвать Math.max(...)
 							if(hW > photoAreaW || hH > photoAreaH ){
 								var ratio = Math.min(ratioW,ratioH);
 								canvas.width = hW*ratio;
@@ -288,8 +289,8 @@ $(window).on('app-ready',function(){
 								canvas.height = hH;
 							}
 							ctx.drawImage(photo,0,0,canvas.width, canvas.height);
-							$('#photo').css('top',(photoAreaH-$('#photo').height())/2 + 'px');
-							$('#photo').css('left',(photoAreaW-$('#photo').width())/2 + 'px');
+							$('#photo').css('top',(photoAreaH-canvas.height)/2 + 'px');
+							$('#photo').css('left',(photoAreaW-canvas.width)/2 + 'px');
 					});
 				} else {
 					console.log('error in image selection');
@@ -519,6 +520,20 @@ $(window).on('app-ready',function(){
 			$('#userName').val(data.profileInfo.name);
 			$('#userSurname').val(data.profileInfo.surname);
 			$('#userBirthday').val(data.profileInfo.birthday);
+			if(data.profileInfo.photo !== ''){
+				var canvas = document.getElementById('photo')
+				var ctx = canvas.getContext('2d');
+				var img = document.getElementById('hidePhoto');
+				img.src = data.profileInfo.photo;
+				img.onload = function(){
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img,0,0);
+					var w = $('#photoArea');
+					$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
+					$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
+				}
+			}
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
 		};
 		this.OnLoginFinish = function(){
@@ -668,7 +683,7 @@ $(window).on('app-ready',function(){
 		}
 	}
 	
-	var SettingsManager = new  SettingsManager();
+	var SettingsManager = new SettingsManager();
 	var settings = SettingsManager.GetSettingsObject();
 	var Render = new Render(window);
 	var MessageHandler = new MessageHandler();
