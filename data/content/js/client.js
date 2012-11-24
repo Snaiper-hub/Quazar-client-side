@@ -16,7 +16,6 @@ $(window).on('app-ready',function(){
 		}
 		this.ShowContextMenu = function(event){
 			var el = event.target;
-			console.log(event);
 			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')){
 				event.preventDefault();
 			}
@@ -289,11 +288,8 @@ $(window).on('app-ready',function(){
 								canvas.height = hH;
 							}
 							ctx.drawImage(photo,0,0,canvas.width, canvas.height);
-							var w = $('#photoArea');
-							$('#photo').css('top',(w.height()-$('#photo').height())/2 + 'px');
-							$('#photo').css('left',(w.width()-$('#photo').width())/2 + 'px');
-
-							var dataURL = canvas.toDataURL();
+							$('#photo').css('top',(photoAreaH-$('#photo').height())/2 + 'px');
+							$('#photo').css('left',(photoAreaW-$('#photo').width())/2 + 'px');
 					});
 				} else {
 					console.log('error in image selection');
@@ -301,6 +297,29 @@ $(window).on('app-ready',function(){
 			};
 			window.frame.openDialog(options,onDialogClose);
 		};
+		
+		this.rotatePhoto = function(degree){
+			var canvas = document.getElementById('photo');
+			var ctx = canvas.getContext('2d');
+			var img = new Image();
+			img.src = canvas.toDataURL();
+
+			var width = canvas.width;
+			var height = canvas.height;
+			canvas.width = height;
+			canvas.height = width;
+
+			img.onload = function(){
+				ctx.translate(canvas.width/2,canvas.height/2);
+				ctx.rotate(degree*Math.PI/180);
+				ctx.drawImage(img,-canvas.height/2,-canvas.width/2);
+			}
+
+			var w = $('#photoArea');
+			$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
+			$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
+		}
+		
 		this.OnProfileInfoUpdateSuccessful = function(){
 			//
 		};
@@ -694,6 +713,8 @@ $(window).on('app-ready',function(){
 	$('#settingsDivisionsList li').click(Render.SwitchSettingsPage);
 	$('#sendMessage').click(MessageHandler.SendMessage);
 	$('#avatarSelector').click(ProfileManager.OnAvatarSelect);
+	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
+	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
 	$('#messageField').keypress(function (e){if(e.which === 13){MessageHandler.submitMessage();	return false;}});
 	$('#channelsList').on('dblclick','.channel',ChannelsManager.JoinChannel);
 	$('#rightColumnHeader').on('click','.channelListItem',ChannelsManager.OnChannelSwitch);
