@@ -21,7 +21,7 @@ var trayMenu = app.createMenu([{
 
 var statusIcon = app.createStatusIcon({
   icon:'./data/content/icons/16.png',
-  tooltip:'Quazar 2',
+  tooltip:'Quazar',
   menu:trayMenu
 });
 
