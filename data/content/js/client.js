@@ -16,7 +16,7 @@ $(window).on('app-ready',function(){
 		}
 		this.ShowContextMenu = function(event){
 			var el = event.target;
-			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')){
+			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.id === 'messageField' || el === $('.messageContent')[0])){
 				event.preventDefault();
 			}
 			if (el.className === 'user'){
@@ -334,7 +334,12 @@ $(window).on('app-ready',function(){
 			var channel = data.channel;
 			var dateString = '<span>'+data.date.hours+':'+data.date.mins+'</span>';
 			var authorString = '';
-			var content = data.content;
+			var content = '';
+			if(data.img === true){
+				content = '<img src="">';
+			} else {
+				content = data.content;
+			}
 			if(data.login === settings.login){
 				authorString='<span class="author me">'+settings.login+'</span>';
 			}else{
@@ -351,6 +356,7 @@ $(window).on('app-ready',function(){
 				dateString+'</div><div class="messageContent">'+content+'</div></div>');
 				ChannelsManager.CurrentSpeakers[channel]=data.login;
 			}
+			if(data.img === true) $('.channelContainer[data-channel='+channel+'] img').last().attr('src',data.content);
 			Render.Scroll();
 		};
 		this.SendMessage = function(){
@@ -358,7 +364,7 @@ $(window).on('app-ready',function(){
 			$('#messageField').focus();
 			if(message !== ''){
 				Render.SetMessageFieldValue('');
-				socket.emit('message',{content:message,channel:ChannelsManager.CurrentChannel});
+				socket.emit('message',{content:message,channel:ChannelsManager.CurrentChannel,img:false});
 			}
 		};
 		this.ReferToUser = function(){
@@ -478,6 +484,23 @@ $(window).on('app-ready',function(){
 			Render.Scroll();
 			ChannelsManager.CurrentSpeakers[channel]='';
 		};
+		this.dropImage = function(event){
+			event.preventDefault();
+			var file = event.dataTransfer.files[0];
+			var reader = new FileReader();
+			var image = new Image();
+			reader.readAsDataURL(file);
+			reader.onload = function (event) {
+				image.src = event.target.result;
+				image.onload = function(){
+					socket.emit('message',{content:image.src,channel:ChannelsManager.CurrentChannel,img:true});
+				}
+			}
+	
+			var type = mime.lookup(file);
+			var stat = fs.statSync(file);
+			var name = file.name;
+		}
 	};
 	
 	var AuthorizationManager = function(){
@@ -730,7 +753,7 @@ $(window).on('app-ready',function(){
 	$('#avatarSelector').click(ProfileManager.OnAvatarSelect);
 	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
 	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
-	$('#messageField').keypress(function (e){if(e.which === 13){MessageHandler.submitMessage();	return false;}});
+	$('#messageField').keypress(function(e){if(e.which === 13){MessageHandler.SendMessage;return false;}});
 	$('#channelsList').on('dblclick','.channel',ChannelsManager.JoinChannel);
 	$('#rightColumnHeader').on('click','.channelListItem',ChannelsManager.OnChannelSwitch);
 	$('#rightColumnHeader').on('click','.channelLeave',ChannelsManager.OnChannelLeave);
@@ -746,10 +769,12 @@ $(window).on('app-ready',function(){
 	$('#sendFile').click(FileTransferManager.SendRequest);
 	$('#fileAccept').click(FileTransferManager.AcceptFile);
 	$(document).on('click',Render.ShowContextMenu);
+	$("#messages")[0].addEventListener("drop",ChannelsManager.dropImage);
+	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});
 	
 	var date = new Date();
 	var monthes = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','ноября','декабря'];
 	var weekDays = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
-	$('#calendar').html('Сегодня '+date.getDate()+'.'+monthes[date.getMonth()-1]+'.'+date.getFullYear()+' года, '+weekDays[date.getDay()-1]);
+	$('#calendar').html('Сегодня '+date.getDate()+' '+monthes[date.getMonth()-1]+' '+date.getFullYear()+' года.');
 	
 });

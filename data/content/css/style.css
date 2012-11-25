@@ -11,7 +11,7 @@ html,body{
 	-webkit-user-select: none;
 }
 
-div{	box-sizing:border-box;}
+div{box-sizing:border-box;}
 
 ul{margin:0;padding:0;}
 
@@ -595,6 +595,7 @@ div.currentChannel{
 	float:left;
 	width:-webkit-calc(100% - 100px);
 	padding:5px;
+	-webkit-user-select: text;
 }
 
 #userContextMenu{
