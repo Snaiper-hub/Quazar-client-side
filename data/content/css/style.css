@@ -397,7 +397,6 @@ button:active{}
 	float:left;
 	width:50%;
 	height:100%;
-	overflow:hidden;
 }
 
 #peopleTab li{
@@ -623,7 +622,7 @@ div.currentChannel{
 	background-color: #33B5E5;
 }
 
-#calendar{
+#calendar,#otherNotification{
 	line-height: 42px;
 	padding:0 5px;
 	position:absolute;

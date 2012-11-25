@@ -79,6 +79,14 @@ $(window).on('app-ready',function(){
 			$('#calendar').fadeOut();
 			$('#fileTransferNotification').fadeIn();
 		}
+		this.otherNotification = function(data){
+			$('#fileTransferNotification').fadeOut();
+			$('#fileTransferStatus').fadeOut();
+			$('#calendar').fadeOut();
+			$('#otherNotification').stop(true).html(data).fadeIn().delay(3000).fadeOut(function(){
+				$('#calendar').fadeIn();
+			});
+		}
 		this.ShowFileTransferStatus = function(filename){
 			$('#fileTransferNotification').fadeOut();
 			$('#calendar').fadeOut();
@@ -116,6 +124,7 @@ $(window).on('app-ready',function(){
 			$('.activeTab').removeClass('activeTab activeTabItem');
 			$(this).addClass('activeTab activeTabItem');
 			$('#tabs').animate({scrollLeft:index*400},{queue:false});
+			$('#tabs').css('left',index*400);
 		};
 		this.RenderChannels = function(data){
 			var channels = data.channels;
@@ -450,7 +459,6 @@ $(window).on('app-ready',function(){
 			var newChannel = $(this).attr('data-channel');			
 			$('div.channelContainer[data-channel='+currentChannel+']').hide();
 			$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
-			console.log(currentChannel,newChannel);
 			$('.currentChannel').removeClass('currentChannel activeTabItem');
 			$('div.channelContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
 			$('.channelOnlineContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
@@ -486,7 +494,16 @@ $(window).on('app-ready',function(){
 		};
 		this.dropImage = function(event){
 			event.preventDefault();
+			var allowedTypes = ["image/png", "image/jpg", "image/gif"];
 			var file = event.dataTransfer.files[0];
+			if(file.size > 1024*1024){
+				Render.otherNotification('Размер картинки слишком большой');
+				return false;
+			}
+			if(allowedTypes.indexOf(file.type) < 0){
+				Render.otherNotification('Разрешены только картинки');
+				return false;
+			}
 			var reader = new FileReader();
 			var image = new Image();
 			reader.readAsDataURL(file);
@@ -496,10 +513,6 @@ $(window).on('app-ready',function(){
 					socket.emit('message',{content:image.src,channel:ChannelsManager.CurrentChannel,img:true});
 				}
 			}
-	
-			var type = mime.lookup(file);
-			var stat = fs.statSync(file);
-			var name = file.name;
 		}
 	};
 	
@@ -701,6 +714,7 @@ $(window).on('app-ready',function(){
 					$(this).attr('disabled','disabled');
 					fileSocket.kill();
 					socket.emit('transferComplete');
+					Render.otherNotification('Передача успешно завершена');
 				}
 			});
 		}
