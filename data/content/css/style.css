@@ -639,15 +639,23 @@ div.currentChannel{
 	position:absolute;
 }
 
-#fileAccept,#fileCancel{
+#fileAccept {
+	background: url(../img/file-accept.png) no-repeat left top;
+	width: 158px;
+	cursor: pointer;
+	line-height: 42px;
+	height: 42px;
+	padding: 0 0 0 40px;
+	-webkit-transition: 0.2s;
+	float: left;
+}
+
+#fileCancel{
 	height: 42px;
 	width:42px;
 	float:left;
 	cursor:pointer;
 	-webkit-transition:0.2s;
-}
-#fileAccept{
-	background:url(../img/file-accept.png) no-repeat center top;
 }
 #fileAccept:hover{
 	background-color:rgba(153, 204, 0, 0.5);
@@ -665,7 +673,7 @@ div.currentChannel{
 	float:left;
 	line-height: 42px;
 	height: 42px;
-	padding:0 5px;
+	padding:0 10px;
 	cursor:pointer;
 	-webkit-transition:0.2s;
 }
