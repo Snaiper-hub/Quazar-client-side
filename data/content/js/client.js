@@ -659,6 +659,7 @@ $(window).on('app-ready',function(){
 					Render.UpdateFileTransferProgress(message.bytesWritten,fileSize);
 					console.log('transfer complete');
 					socket.emit('transferComplete');
+					Render.otherNotification('Передача успешно завершена');
 				}
 			});
 			fileServer.on('exit',function(){
@@ -672,6 +673,7 @@ $(window).on('app-ready',function(){
 				fileServer.kill();
 				console.log('cancelTransfer event');
 				socket.emit('transferComplete');
+				Render.otherNotification('Передача отменена');
 			});
 		}
 		this.OnFileServerStarted = function(data){
@@ -688,8 +690,10 @@ $(window).on('app-ready',function(){
 					Render.UpdateFileTransferProgress(message.bytesRead,fileSize);
 					console.log('transfer complete');
 					socket.emit('transferComplete');
+					Render.otherNotification('Передача успешно завершена');
 				}else if(message.type === 'error'){
 					console.log(message.err);
+					Render.otherNotification('Ошибка передачи');
 				}
 			});
 			function cleanOnCancel(path){
@@ -714,7 +718,7 @@ $(window).on('app-ready',function(){
 					$(this).attr('disabled','disabled');
 					fileSocket.kill();
 					socket.emit('transferComplete');
-					Render.otherNotification('Передача успешно завершена');
+					Render.otherNotification('Передача отменена');
 				}
 			});
 		}
