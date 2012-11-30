@@ -21,7 +21,7 @@ $(window).on('app-ready',function(){
 			}
 			if (el.className === 'user'){
 				var name = $(el).html();
-				//в будущем будет свое меню
+				//в будущем будет свое меню, сейчас игнорим клик по себе
 				if(name === settings.login){
 					$('#userContextMenu').hide();
 					return false;
@@ -31,7 +31,7 @@ $(window).on('app-ready',function(){
 					top:event.pageY
 				}).show();
 				FileTransferManager.SelectedUser = name;
-			} else if(el.className === 'notAtiveMenuItem'){
+			} else if(el.className === 'notActiveMenuItem'){
 				return false;
 			} else {
 				$('#userContextMenu').hide();
@@ -632,7 +632,7 @@ $(window).on('app-ready',function(){
 							type:FileTransferManager.File.Type
 						}
 					});
-					$('#sendFile').unbind('click').addClass('notAtiveMenuItem');
+					$('#sendFile').unbind('click').addClass('notActiveMenuItem');
 					Render.ShowSenderFileTransferNotification(to);
 				}
 			}
@@ -644,7 +644,7 @@ $(window).on('app-ready',function(){
 			FileTransferManager.File.Name = data.file.name;
 			FileTransferManager.File.Size = data.file.size;
 			FileTransferManager.File.Type = data.file.type;
-			$('#sendFile').unbind('click').addClass('notAtiveMenuItem');
+			$('#sendFile').unbind('click').addClass('notActiveMenuItem');
 			console.log(FileTransferManager.File);
 		}
 		this.AcceptFile = function(){
@@ -685,19 +685,19 @@ $(window).on('app-ready',function(){
 			});
 			fileServer.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
-				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 			});
 			fileServer.stderr.on('data',function(data){
 				console.log(data.toString());
 				console.log('error in child');
-				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				Render.otherNotification('Ошибка передачи');
 			});
 			$('.cancelTransfer').one('click',function(){
 				fileServer.kill();
 				console.log('cancelTransfer event');
 				socket.emit('transferComplete');
-				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				Render.otherNotification('Передача отменена');
 			});
 		}
@@ -714,11 +714,11 @@ $(window).on('app-ready',function(){
 				}else if(message.type === 'workerExit'){
 					console.log('transfer complete');
 					socket.emit('transferComplete');
-					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 					Render.otherNotification('Передача успешно завершена');
 				}else if(message.type === 'error'){
 					console.log(message.err);
-					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 					Render.otherNotification('Ошибка передачи');
 				}
 			});
@@ -732,7 +732,7 @@ $(window).on('app-ready',function(){
 			}
 			fileSocket.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
-				$('#sendFile').bind('click').removeClass('notAtiveMenuItem');
+				$('#sendFile').bind('click').removeClass('notActiveMenuItem');
 				if(fileSize > fs.statSync(filePath).size){
 					cleanOnCancel(filePath);
 				}
@@ -740,7 +740,7 @@ $(window).on('app-ready',function(){
 			fileSocket.stderr.on('data',function(data){
 				console.log(data.toString());
 				console.log('error in child');
-				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				Render.otherNotification('Ошибка передачи');
 			});
 			$('.cancelTransfer').one('click',function(){
@@ -748,7 +748,7 @@ $(window).on('app-ready',function(){
 					$(this).attr('disabled','disabled');
 					fileSocket.kill();
 					socket.emit('transferComplete');
-					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				}
 			});
 		}
