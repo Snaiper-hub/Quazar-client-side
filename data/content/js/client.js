@@ -120,7 +120,7 @@ $(window).on('app-ready',function(){
 			var barWidth = Math.round((bytesWritten/fileSize)*width);
 			$('#bar').css('width',barWidth+'px');
 			if(speed){
-				$('#transferSpeed').html(speed+' KB/sec');
+				$('#transferSpeed').html(speed);
 			}
 		}
 		this.OpenWindow = function(){

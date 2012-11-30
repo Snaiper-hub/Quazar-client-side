@@ -10,6 +10,17 @@ var ws = fs.createWriteStream(filePath, {
 	bufferSize: 1024 * 1024
 });
 
+function rounding(speed){
+	if(speed <= 1024){
+		speed = speed + ' В/сек.';
+	} else if(speed <= 1048576){
+		speed = (speed/1024).toFixed(1) + ' КВ/сек.';
+	} else if(speed <= 1073741824){
+		speed = (speed/1048576).toFixed(1) + ' МВ/сек.';
+	}
+	return speed;
+}
+
 try{
 	fileSocket.pipe(ws);
 }catch(err){
@@ -18,7 +29,7 @@ try{
 
 var biteStamp = 0;
 var speedCheck = setInterval(function () {
-	var speed = Math.round((fileSocket.bytesRead - biteStamp) / 1024);
+	var speed = rounding(fileSocket.bytesRead - biteStamp);
 	process.send({
 		type: 'progressUpdate',
 		speed: speed,
