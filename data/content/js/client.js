@@ -4,7 +4,7 @@ $(window).on('app-ready',function(){
 	var fs = require('fs');
 	var child_process = require('child_process');
 	
-	var Render = function() {
+	var Render = function(){
 		this.GetFieldValue = function(field){
 			return $('#'+field).val();
 		};
@@ -16,17 +16,31 @@ $(window).on('app-ready',function(){
 		}
 		this.ShowContextMenu = function(event){
 			var el = event.target;
-			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.id === 'messageField' || el === $('.messageContent')[0])){
+			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.id === 'messageField' || el.className === 'messageContent')){
 				event.preventDefault();
 			}
 			if (el.className === 'user'){
+				var name = $(el).html();
+				//в будущем будет свое меню
+				if(name === settings.login){
+					$('#userContextMenu').hide();
+					return false;
+				}
 				$('#userContextMenu').css({
 					left:event.pageX,
 					top:event.pageY
 				}).show();
-				FileTransferManager.SelectedUser = $(el).html();
+				FileTransferManager.SelectedUser = name;
+			} else if(el.className === 'notAtiveMenuItem'){
+				return false;
 			} else {
 				$('#userContextMenu').hide();
+			}
+			if($('#otherNotification:visible').length){
+				$('#otherNotification').stop(true,true).delay(1500).fadeOut(function(){
+					$('#calendar').fadeIn();
+					$('#transferInfo div').empty();
+				});
 			}
 		};
 		this.HideContextMenu = function(){
@@ -44,7 +58,7 @@ $(window).on('app-ready',function(){
 		this.HideOverlay = function(){
 			$('#overlay').fadeOut();
 		}
-		this.ShowLoginPanel = function(callback){
+		this.ShowLoginPanel = function(){
 			$('#loginPanel').slideDown();
 		};
 		this.HideLoginPanel = function(){
@@ -52,7 +66,7 @@ $(window).on('app-ready',function(){
 		};
 		this.ShowSignInForm = function(){
 			$('#registrationPanel').slideUp(function(){
-				ShowLoginPanel();
+				Render.ShowLoginPanel();
 			});
 		};
 		this.Scroll = function(){
@@ -75,17 +89,24 @@ $(window).on('app-ready',function(){
 			$('#from').html(data.from);
 			$('#fileName').html(data.file.name);
 			$('#fileSize').html(data.file.size);
-			$('#fileType').html(data.file.type);
 			$('#calendar').fadeOut();
+			$('#SenderFileTransferNotification').fadeOut();
 			$('#fileTransferNotification').fadeIn();
+		}
+		this.ShowSenderFileTransferNotification = function(data){
+			$('#toUser').html('Ожидание подтверждения от '+data);
+			$('#fileTransferNotification').fadeOut();
+			$('#fileTransferStatus').fadeOut();
+			$('#calendar').fadeOut();
+			$('#SenderFileTransferNotification').fadeOut().fadeIn();
 		}
 		this.otherNotification = function(data){
 			$('#fileTransferNotification').fadeOut();
 			$('#fileTransferStatus').fadeOut();
 			$('#calendar').fadeOut();
-			$('#otherNotification').stop(true).html(data).fadeIn().delay(3000).fadeOut(function(){
-				$('#calendar').fadeIn();
-			});
+			$('#SenderFileTransferNotification').fadeOut();
+			$('#bar').css('width','0px');
+			$('#otherNotification').html(data).fadeIn();
 		}
 		this.ShowFileTransferStatus = function(filename){
 			$('#fileTransferNotification').fadeOut();
@@ -94,6 +115,7 @@ $(window).on('app-ready',function(){
 			$('#transferFileName').html(filename);
 		}
 		this.UpdateFileTransferProgress = function(bytesWritten,fileSize,speed){
+			$('#SenderFileTransferNotification').fadeOut();
 			var width = $('#progress').width();
 			var barWidth = Math.round((bytesWritten/fileSize)*width);
 			$('#bar').css('width',barWidth+'px');
@@ -435,7 +457,7 @@ $(window).on('app-ready',function(){
 		};
 		this.CreatePrivateChannel = function(data){
 			console.log('create private channel fire');
-			var user = $(this).attr('data-login');
+			var user = FileTransferManager.SelectedUser;
 			if(settings.login !== user){
 				var chName = [settings.login, user].sort().join('');
 				if($('.channelListItem[data-channel='+chName+']').length){
@@ -610,6 +632,8 @@ $(window).on('app-ready',function(){
 							type:FileTransferManager.File.Type
 						}
 					});
+					$('#sendFile').unbind('click').addClass('notAtiveMenuItem');
+					Render.ShowSenderFileTransferNotification(to);
 				}
 			}
 			window.frame.openDialog(dialogOptions,onFileSelected);
@@ -620,11 +644,10 @@ $(window).on('app-ready',function(){
 			FileTransferManager.File.Name = data.file.name;
 			FileTransferManager.File.Size = data.file.size;
 			FileTransferManager.File.Type = data.file.type;
-			
+			$('#sendFile').unbind('click').addClass('notAtiveMenuItem');
 			console.log(FileTransferManager.File);
 		}
 		this.AcceptFile = function(){
-			
 			var dialogOptions = {
 				type:'save',
 				acceptTypes:{All:['*.*']},
@@ -635,7 +658,7 @@ $(window).on('app-ready',function(){
 			var onFileSelected = function(err,file){
 				if(!err){
 					FileTransferManager.File.Path = file;
-					console.log('file accepted');
+					console.log('file accepted', FileTransferManager.File.Path);
 					Render.ShowFileTransferStatus(FileTransferManager.File.Name);
 					socket.emit('fileAccepted',{from:FileTransferManager.File.From});
 				}
@@ -643,10 +666,8 @@ $(window).on('app-ready',function(){
 			window.frame.openDialog(dialogOptions,onFileSelected);
 		}
 		this.OnFileAccepted = function(){
-			Render.ShowFileTransferStatus();
 			Render.ShowFileTransferStatus(FileTransferManager.File.Name);
 			var filePath = FileTransferManager.File.Path;
-			console.log(filePath);
 			var fileSize = fs.statSync(filePath).size;
 			var fileServer = child_process.fork(__dirname+'\\content\\js\\workers\\fileServer.js',{env:{filePath:filePath},silent:true});
 			fileServer.on('message',function(message){
@@ -664,15 +685,19 @@ $(window).on('app-ready',function(){
 			});
 			fileServer.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
 			});
 			fileServer.stderr.on('data',function(data){
 				console.log(data.toString());
 				console.log('error in child');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				Render.otherNotification('Ошибка передачи');
 			});
-			$('#cancelTransfer').one(function(){
+			$('.cancelTransfer').one('click',function(){
 				fileServer.kill();
 				console.log('cancelTransfer event');
 				socket.emit('transferComplete');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
 				Render.otherNotification('Передача отменена');
 			});
 		}
@@ -687,16 +712,18 @@ $(window).on('app-ready',function(){
 				}else if(message.type === 'progressUpdate'){
 					Render.UpdateFileTransferProgress(message.bytesRead,fileSize,message.speed);
 				}else if(message.type === 'workerExit'){
-					Render.UpdateFileTransferProgress(message.bytesRead,fileSize);
 					console.log('transfer complete');
 					socket.emit('transferComplete');
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
 					Render.otherNotification('Передача успешно завершена');
 				}else if(message.type === 'error'){
 					console.log(message.err);
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
 					Render.otherNotification('Ошибка передачи');
 				}
 			});
 			function cleanOnCancel(path){
+				Render.otherNotification('Передача отменена');
 				fs.unlink(path,function(err){
 					if(!err){
 						console.log('clean up done');
@@ -705,6 +732,7 @@ $(window).on('app-ready',function(){
 			}
 			fileSocket.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
+				$('#sendFile').bind('click').removeClass('notAtiveMenuItem');
 				if(fileSize > fs.statSync(filePath).size){
 					cleanOnCancel(filePath);
 				}
@@ -712,13 +740,15 @@ $(window).on('app-ready',function(){
 			fileSocket.stderr.on('data',function(data){
 				console.log(data.toString());
 				console.log('error in child');
+				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
+				Render.otherNotification('Ошибка передачи');
 			});
-			$('#cancelTransfer').one(function(){
+			$('.cancelTransfer').one('click',function(){
 				if(fileSocket){
 					$(this).attr('disabled','disabled');
 					fileSocket.kill();
 					socket.emit('transferComplete');
-					Render.otherNotification('Передача отменена');
+					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notAtiveMenuItem');
 				}
 			});
 		}
@@ -782,10 +812,11 @@ $(window).on('app-ready',function(){
 	$('#showLoginPanel').on('click',Render.ShowSignInForm);
 	$('#regSubmit').on('click',Handler.RegistrationSubmit);
 	$('#messages').on('click','.author',MessageHandler.ReferToUser);
-	$('#tabsWrapper').on('dblclick','.user',ChannelsManager.CreatePrivateChannel);
+	$('#privateChannel').on('click',ChannelsManager.CreatePrivateChannel);
 	$('#logOut').on('click',AuthorizationManager.SignOut);
 	$('#sendFile').click(FileTransferManager.SendRequest);
 	$('#fileAccept').click(FileTransferManager.AcceptFile);
+	//$('#cancelTransfer').click(FileTransferManager.AcceptFile);
 	$(document).on('click',Render.ShowContextMenu);
 	$("#messages")[0].addEventListener("drop",ChannelsManager.dropImage);
 	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});

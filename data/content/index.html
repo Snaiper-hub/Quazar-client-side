@@ -11,7 +11,12 @@
 	</head>
 	<body>
 	<div id="loader"><div id="loaderInner"></div></div>
-	<div id="userContextMenu"><div id="sendFile">Отправить файл</div><div id="getUserInfo">Показать информацию</div><div id="referToUser">Обратиться в чате</div></div>
+	<div id="userContextMenu">
+		<div id="sendFile">Отправить файл</div>
+		<div id="getUserInfo">Показать информацию</div>
+		<div id="privateChannel">Приват</div>
+		<div id="referToUser">Обратиться в чате</div>
+	</div>
 		<div id="overlay">
 			<div id="serverOffline">
 				<h3>Сервер недоступен.</h3>
@@ -33,7 +38,7 @@
 				<input id="regEmailField" class="centredInput" type="text" placeholder="Email" />
 				<button id="regSubmit">Зарегистрироваться</button>
 				<div id="regStatus"></div>
-				<a href="#" id="showLoginPanel" data-action="close">Назад</a>
+				<a href="#" id="showLoginPanel">Назад</a>
 			</div>
 			<div id="profile" class="page">
 				<div class="genericPageHeader">Мой профиль</div>
@@ -140,11 +145,13 @@
 						<div id="from"></div>
 						<div id="fileName"></div>
 						<div id="fileSize"></div>
-						<div id="fileType"></div>
 					</div>
 				</div>
+				<div id="SenderFileTransferNotification">
+					<div id="toUser"></div><div class="cancelTransfer"></div>
+				</div>
 				<div id="fileTransferStatus">
-					<div id="progress"><div id="bar"></div></div><div id="cancelTransfer"></div>
+					<div id="progress"><div id="bar"></div></div><div class="cancelTransfer"></div>
 					<div id="transferInfo">
 						<div id="transferFileName"></div>
 						<div id="transferSpeed"></div>

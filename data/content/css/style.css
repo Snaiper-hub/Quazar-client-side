@@ -203,16 +203,9 @@ button:active{}
 	overflow:hidden;
 	border-right:1px #33B5E5 solid;
 }
-#statusBar{
-	height:48px;
-	border-top:1px #33B5E5 solid;
-	width:100%;
-	float:left;
-}
 #leftColumnHeader{
 	overflow:hidden;
 }
-
 #userBar{
 	font-size:32px;
 	float:left;
@@ -611,6 +604,14 @@ div.currentChannel{
 	box-shadow:0px 0px 3px #ccc;
 }
 
+.notAtiveMenuItem{
+	cursor: default!important;
+	color: #888;
+}
+.notAtiveMenuItem:hover{
+	background-color: #FFF!important;
+}
+
 #userContextMenu div{
 	float:left;
 	line-height:32px;
@@ -622,36 +623,48 @@ div.currentChannel{
 	background-color: #33B5E5;
 }
 
-#calendar,#otherNotification{
-	line-height: 42px;
-	padding:0 5px;
-	position:absolute;
-}
-
 .toolTip{
 	line-height: 42px;
 	padding:0 5px;
 	float:left;
 	color:#33B5E5;
 }
-#fileTransferNotification{
-	display:none;
-	position:absolute;
+#statusBar{
+	height:48px;
+	border-top:1px #33B5E5 solid;
+	width:100%;
+	float:left;
+	line-height: 42px;
+}
+#toUser,#calendar{
+	float:left;
+	padding: 0 10px;
 }
 
+#fileTransferStatus{
+	line-height: 22px;
+}
+#fileTransferNotification{
+	line-height: 42px;
+}
+#otherNotification{
+	display:none;
+	padding: 0 10px;
+}
+#fileTransfer,#fileTransferNotification,#fileTransferStatus,#SenderFileTransferNotification{
+	display:none;
+}
 #fileAccept {
 	background: url(../img/file-accept.png) no-repeat left top;
 	width: 158px;
 	cursor: pointer;
-	line-height: 42px;
 	height: 42px;
 	padding: 0 0 0 40px;
 	-webkit-transition: 0.2s;
 	float: left;
 }
-
 #fileCancel{
-	height: 42px;
+	height:42px;
 	width:42px;
 	float:left;
 	cursor:pointer;
@@ -671,7 +684,6 @@ div.currentChannel{
 }
 #fileInfo div{
 	float:left;
-	line-height: 42px;
 	height: 42px;
 	padding:0 10px;
 	cursor:pointer;
@@ -685,6 +697,10 @@ div.currentChannel{
 	overflow: hidden;
 }
 
+#fileName:hover{
+	width: auto;
+}
+
 #fileName:before{
 	content: '';
 	display: block;
@@ -694,15 +710,12 @@ div.currentChannel{
 	position: absolute;
 	margin-left: 253px;
 }
-#fileTransferStatus{
-	display:none;
-}
 
 #progress{
 	height: 3px;
 	width: -webkit-calc(100% - 60px);
 	background: #E0E0E0;
-	margin: 5px 7px;
+	margin: 5px 8px;
 	float:left;
 }
 #bar{
@@ -711,13 +724,13 @@ div.currentChannel{
 	width:0;
 	-webkit-transition:0.2s;
 }
-#cancelTransfer{
+.cancelTransfer{
 	float: right;
 	height: 42px;
 	width: 42px;
 	background:url(../img/file-cancel.png) no-repeat center;
 }
-#cancelTransfer:hover{
+.cancelTransfer:hover{
 	background-color:rgba(255, 68, 68, 0.5);
 }
 #transferInfo{
