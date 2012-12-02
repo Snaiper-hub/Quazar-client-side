@@ -273,10 +273,10 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.OnRegistrationSuccess = function(){
-			Render.ShowRegistrationStatus('OK');
+			Render.ShowSignInForm();
 		};
-		this.OnRegistrationFailed = function(){
-			Render.ShowRegistrationStatus('Fail');
+		this.OnRegistrationFailed = function(data){
+			Render.ShowRegistrationStatus(data);
 		};
 	};
 	var ProfileManager = function(){
@@ -541,11 +541,9 @@ $(window).on('app-ready',function(){
 		this.SignIn = function(){
 			if(Render.GetFieldValue('passwordField') !== ''){
 				Render.ShowLoader();
-				settings.login = Render.GetFieldValue('loginField');
 				var password = Render.GetFieldValue('passwordField');
-				SettingsManager.SaveSetting('login',settings.login);
-				settings.autoLogin = $('#autoLogin').prop('checked');
-				SettingsManager.SaveSetting('autoLogin',settings.autoLogin);
+				SettingsManager.SaveSetting('login',Render.GetFieldValue('loginField'));
+				SettingsManager.SaveSetting('autoLogin',$('#autoLogin').prop('checked'));
 				socket.emit('login',{login:settings.login,password:password});
 			} else if(settings.login && settings.hash && settings.autoLogin===true){
 				socket.emit('login',{login:settings.login,hash:settings.hash});
@@ -770,7 +768,7 @@ $(window).on('app-ready',function(){
 		
 	socket.on('loginSuccessful',AuthorizationManager.OnLoginSuccess);
 	socket.on('registrationSuccessful',RegistrationManager.OnRegistrationSuccess);
-	socket.on('registrationFailed',	RegistrationManager.OnRegistrationFailed);
+	socket.on('registrationFailed',RegistrationManager.OnRegistrationFailed);
 	socket.on('profileInfoUpdateSuccessful',ProfileManager.OnProfileInfoUpdateSuccessful);
 	socket.on('profileInfoUpdateFailed',ProfileManager.OnProfileInfoUpdateFailed);
 	socket.on('loginError',AuthorizationManager.OnLoginError);
@@ -809,7 +807,7 @@ $(window).on('app-ready',function(){
 	$('#signIn').on('click',AuthorizationManager.SignIn);
 	$('#registration').on('click',Render.ShowRegistration);
 	$('#showLoginPanel').on('click',Render.ShowSignInForm);
-	$('#regSubmit').on('click',Handler.RegistrationSubmit);
+	$('#regSubmit').on('click',RegistrationManager.RegistrationSubmit);
 	$('#messages').on('click','.author',MessageHandler.ReferToUser);
 	$('#privateChannel').on('click',ChannelsManager.CreatePrivateChannel);
 	$('#logOut').on('click',AuthorizationManager.SignOut);
