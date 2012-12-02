@@ -146,7 +146,6 @@ $(window).on('app-ready',function(){
 			$('.activeTab').removeClass('activeTab activeTabItem');
 			$(this).addClass('activeTab activeTabItem');
 			$('#tabs').animate({scrollLeft:index*400},{queue:false});
-			$('#tabs').css('left',index*400);
 		};
 		this.RenderChannels = function(data){
 			var channels = data.channels;
