@@ -42,49 +42,43 @@ $(window).on('app-ready',function(){
 					$('#transferInfo div').empty();
 				});
 			}
-		};
+		}
 		this.HideContextMenu = function(){
 			$('#userContextMenu').hide();
 		}
-		this.ShowLoader = function(){
-			$('#loader').fadeIn();
-		};
-		this.HideLoader = function(){
-			$('#loader').fadeOut();
-		};
-		this.ShowOverlay = function(){
-			$('#overlay').fadeIn();
+		this.FadeIn = function(id){
+			$('#'+id).fadeIn();
 		}
-		this.HideOverlay = function(){
-			$('#overlay').fadeOut();
+		this.FadeOut = function(id){
+			$('#'+id).fadeOut();
 		}
 		this.ShowLoginPanel = function(){
 			$('#loginPanel').slideDown();
-		};
+		}
 		this.HideLoginPanel = function(){
 			$('#loginPanel').slideUp();
-		};
+		}
 		this.ShowSignInForm = function(){
 			$('#registrationPanel').slideUp(function(){
 				Render.ShowLoginPanel();
 			});
-		};
+		}
 		this.Scroll = function(){
 			var $el=$('#messages').find('.currentChannel');
 			var height = $el[0].scrollHeight;
 			$el.animate({scrollTop: height + "px"}, {queue: false});
-		};
+		}
 		this.ShowRegistration = function(){
 			$('#loginPanel').slideUp(function(){
 				$('#registrationPanel').slideDown();
 			});
-		};
+		}
 		this.ShowRegistrationStatus = function(status){
 			$('#regStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
-		};
+		}
 		this.ShowSignInStatus = function(status){
 			$('#signInStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
-		};
+		}
 		this.ShowFileTransferNotification = function(data){
 			$('#from').html(data.from);
 			$('#fileName').html(data.file.name);
@@ -193,7 +187,7 @@ $(window).on('app-ready',function(){
 	
 	var SocketManager = function(){
 		this.OnError = function(){
-			Render.HideLoader();
+			Render.FadeOut('loader');
 			$('#serverOffline').slideDown();
 			setTimeout(function(){SocketManager.ServerConnect(true);}, 20000);
 			console.log('Ошибка соединения');
@@ -203,7 +197,7 @@ $(window).on('app-ready',function(){
 			if(settings.login && settings.hash && settings.autoLogin===true){
 				AuthorizationManager.SignIn();
 			} else {
-				Render.HideLoader();
+				Render.FadeOut('loader');
 				Render.ShowLoginPanel();
 			}
 		};
@@ -219,7 +213,7 @@ $(window).on('app-ready',function(){
 			console.log('Дисконнект');
 		};
 		this.ServerConnect = function(rc){
-			Render.ShowLoader();
+			Render.FadeIn('loader');
 			if(rc){
 				socket.socket.connect();
 				console.log('reConnecting...');
@@ -286,7 +280,7 @@ $(window).on('app-ready',function(){
 			var userBirthday = Render.GetFieldValue('userBirthday');
 			var userPhoto = document.getElementById('photo').toDataURL();
 			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto});
-			Render.HideOverlay();
+			Render.FadeOut('overlay');
 		};
 		this.OnAvatarSelect = function(){
 			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png'] }, multiSelect:false, dirSelect:false};
@@ -540,7 +534,7 @@ $(window).on('app-ready',function(){
 	var AuthorizationManager = function(){
 		this.SignIn = function(){
 			if(Render.GetFieldValue('passwordField') !== ''){
-				Render.ShowLoader();
+				Render.FadeIn('loader');
 				var password = Render.GetFieldValue('passwordField');
 				SettingsManager.SaveSetting('login',Render.GetFieldValue('loginField'));
 				SettingsManager.SaveSetting('autoLogin',$('#autoLogin').prop('checked'));
@@ -552,7 +546,7 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.SignOut = function(){
-			Render.ShowOverlay();
+			Render.FadeOut('overlay');
 			Render.ShowLoginPanel();
 			$('#channelsRow').children().remove();
 			$('.channelContainer').remove();
@@ -567,8 +561,7 @@ $(window).on('app-ready',function(){
 		};
 		this.OnLoginSuccess = function(data){
 			$('#userBar').html(settings.login);
-			Render.HideOverlay();
-			$('#signInStatus').removeClass().html('').hide();
+			Render.FadeOut('overlay');
 			Render.HideLoginPanel();
 			$('#serverOffline').fadeOut();
 			$('#pageContainer').fadeIn();
@@ -592,11 +585,11 @@ $(window).on('app-ready',function(){
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
 		};
 		this.OnLoginFinish = function(){
-			Render.HideLoader();
+			Render.FadeOut('loader');
 		};
 		this.OnLoginError = function(error){
 			Render.ShowLoginPanel();
-			Render.HideLoader();
+			Render.FadeOut('loader');
 			Render.ShowSignInStatus(error);
 		};
 	};
@@ -813,7 +806,7 @@ $(window).on('app-ready',function(){
 	$('#logOut').on('click',AuthorizationManager.SignOut);
 	$('#sendFile').click(FileTransferManager.SendRequest);
 	$('#fileAccept').click(FileTransferManager.AcceptFile);
-	//$('#cancelTransfer').click(FileTransferManager.AcceptFile);
+	//$('#cancelTransfer').click(FileTransferManager.
 	$(document).on('click',Render.ShowContextMenu);
 	$("#messages")[0].addEventListener("drop",ChannelsManager.dropImage);
 	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});
