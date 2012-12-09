@@ -546,7 +546,7 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.SignOut = function(){
-			Render.FadeOut('overlay');
+			Render.FadeIn('overlay');
 			Render.ShowLoginPanel();
 			$('#channelsRow').children().remove();
 			$('.channelContainer').remove();
@@ -778,6 +778,7 @@ $(window).on('app-ready',function(){
 	socket.on('sendFileRequest',FileTransferManager.OnRequest);
 	socket.on('fileAccepted',FileTransferManager.OnFileAccepted);
 	socket.on('fileServerStarted',FileTransferManager.OnFileServerStarted);
+	
 	$('body').on('contextmenu',Render.ShowContextMenu);
 	$('body').on('mousedown','#textareaResizer',Handler.OnMessageFieldResize.MouseDown);
 	$('body').on('mouseup',Handler.OnMessageFieldResize.MouseUp);
