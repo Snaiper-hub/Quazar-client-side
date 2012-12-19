@@ -12,6 +12,7 @@
 	<body>
 	<div id="loader"><div id="loaderInner"></div></div>
 	<div id="userContextMenu">
+		<div id="addToFriends">Добавить в друзья</div>
 		<div id="sendFile">Отправить файл</div>
 		<div id="getUserInfo">Показать информацию</div>
 		<div id="privateChannel">Приват</div>
@@ -66,7 +67,7 @@
 				<div class="genericPageHeader">Список каналов</div>
 				<div class="genericPageContent">
 					<div class="genericTooltip">Вступить в канал или создать новый:</div>
-					<div id="joinChannelForm">				
+					<div id="joinChannelForm">
 						<span id="joinChannelFormExpander" title="joinChannelFormExpander" ></span>
 						<input id="addChannelField" type="text" placeholder="Название канала" />
 						<button id="createChannel">Создать</button>
@@ -96,7 +97,7 @@
 				<div class="genericFooter">
 					<button id="settingsSave">Сохранить и выйти</button>
 					<button data-action="close">Отмена</button>
-				</div>				
+				</div>
 			</div>
 		</div>
 		<div id="pageContainer">
@@ -116,12 +117,10 @@
 					<a href="#" id="channelOnlineTabLink" title="Кто на канале">На канале</a>
 					<div id="tabs">
 						<div id="tabsWrapper">
-							<div id="peopleTab">
-								<span>friend</span>								
-							</div>
+							<div id="peopleTab"></div>
 							<div id="channelOnlineTab"></div>
 						</div>
-					</div>				
+					</div>
 				</div>
 			</div>
 			<div id="rightColumn">
@@ -130,7 +129,7 @@
 					<div id="privatesRow"></div>
 				</div>
 				<div id="messages"></div>
-				<div id="formContainer">			
+				<div id="formContainer">
 					<div id="textareaResizer"></div>
 					<textarea id="messageField" placeholder="Текст сообщения..."></textarea>
 					<button id="sendMessage">Отправить</button>
@@ -159,6 +158,6 @@
 				</div>
 				<div id="otherNotification"></div>
 			</div>
-		</div>		
+		</div>
 	</body>
 </html>

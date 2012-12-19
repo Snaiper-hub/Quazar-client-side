@@ -471,10 +471,13 @@ button:active{}
 	display:none;
 }
 
-.channelOnlineContainer div{
+.channelOnlineContainer div, .friend{
 	cursor:pointer;
 	background:url(../img/user.png) no-repeat center left;
 	padding: 2px 0 2px 25px;
+}
+.friend.offline{
+	opacity:0.5;
 }
 
 #createChannel,#addChannelField{

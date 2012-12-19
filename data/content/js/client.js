@@ -30,7 +30,7 @@ $(window).on('app-ready',function(){
 					left:event.pageX,
 					top:event.pageY
 				}).show();
-				FileTransferManager.SelectedUser = name;
+				PeopleManager.SelectedUser = name;
 			} else if(el.className === 'notActiveMenuItem'){
 				return false;
 			} else {
@@ -159,7 +159,6 @@ $(window).on('app-ready',function(){
 				}else{
 					$('#channelOnlineTab').append('<div class="channelOnlineContainer" data-channel="'+name+'"></div>');
 				}
-
 				for(var ii = 0;ii<online.length;ii++){
 					$('.channelOnlineContainer[data-channel='+name+']').append('<div class="user" data-login="'+online[ii]+'">'+online[ii]+'</div>');
 				}
@@ -182,6 +181,37 @@ $(window).on('app-ready',function(){
 				channels.push('<div class="channel">' + channel.name + '</div>');
 			});
 			$('#channelsList').html(channels.sort().join(''));
+		};
+		
+		this.RenderFriends = function(friends){
+			if(friends.length){
+				friends.forEach(function(friend){
+					var online = friend.online ? 'online' : 'offline';
+					$('#peopleTab').append('<div class="friend '+online+'">'+friend.name+'</div>');
+				});				
+			}
+		}
+		
+		this.OnMessageFieldResize = {};
+		this.OnMessageFieldResize.MouseDown = function(event){
+		var mouseStart = event.pageY;
+		var tH = $('#messageField').height();
+		$('body').mousemove(function(e){
+			var h = tH + (mouseStart-e.pageY);
+			if( h >= 36 && h <= 200 ){
+				$('#messageField').height(h);
+				$('#messages').css('padding-bottom',100+h);
+				var $el=$('#messages').find('.currentChannel');
+				var height = $el[0].scrollHeight;
+				$el.css({scrollTop: height + "px"});
+			}
+		});
+		};
+		this.OnMessageFieldResize.MouseUp = function(){
+			$('body').unbind('mousemove');
+		};
+		this.OnMessageFieldResize.MouseLeave = function(){
+			$('body').unbind('mousemove');
 		};
 	};
 	
@@ -404,30 +434,6 @@ $(window).on('app-ready',function(){
 		};
 	};
 	
-	var Handler = function() {
-	this.OnMessageFieldResize = {};
-	this.OnMessageFieldResize.MouseDown = function(event){
-		var mouseStart = event.pageY;
-		var tH = $('#messageField').height();
-		$('body').mousemove(function(e){
-			var h = tH + (mouseStart-e.pageY);
-			if( h >= 36 && h <= 200 ){
-				$('#messageField').height(h);
-				$('#messages').css('padding-bottom',100+h);
-				var $el=$('#messages').find('.currentChannel');
-				var height = $el[0].scrollHeight;
-				$el.css({scrollTop: height + "px"});
-			}
-		});
-		};
-		this.OnMessageFieldResize.MouseUp = function(){
-			$('body').unbind('mousemove');
-		};
-		this.OnMessageFieldResize.MouseLeave = function(){
-			$('body').unbind('mousemove');
-		};
-	};
-	
 	var ChannelsManager = function(){
 		this.CurrentChannel = '';
 		this.CurrentSpeakers = [];
@@ -450,7 +456,7 @@ $(window).on('app-ready',function(){
 		};
 		this.CreatePrivateChannel = function(data){
 			console.log('create private channel fire');
-			var user = FileTransferManager.SelectedUser;
+			var user = PeopleManager.SelectedUser;
 			if(settings.login !== user){
 				var chName = [settings.login, user].sort().join('');
 				if($('.channelListItem[data-channel='+chName+']').length){
@@ -583,6 +589,7 @@ $(window).on('app-ready',function(){
 				}
 			}
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
+			Render.RenderFriends(data.friends);
 		};
 		this.OnLoginFinish = function(){
 			Render.FadeOut('loader');
@@ -594,11 +601,22 @@ $(window).on('app-ready',function(){
 		};
 	};
 	
-	var FileTransferManager = function(){
+	var PeopleManager = function(){
 		this.SelectedUser = '';
+		this.AddToFriends = function(){
+			var user = PeopleManager.SelectedUser;
+			console.log('adding ',user);
+			socket.emit('addToFriends',{user:user,login:settings.login});
+		};
+		this.FriendAdded = function(data){
+			console.log('added ',data.user);
+		};
+	}
+	
+	var FileTransferManager = function(){
 		this.File = new Object();
 		this.SendRequest = function(){
-			var to = FileTransferManager.SelectedUser;
+			var to = PeopleManager.SelectedUser;
 			var dialogOptions = {
 				type:'open',
 				acceptTypes:{All:['*.*']},
@@ -753,8 +771,8 @@ $(window).on('app-ready',function(){
 	var SocketManager = new SocketManager();
 	var ProfileManager = new ProfileManager();
 	var RegistrationManager = new RegistrationManager();
-	var Handler = new Handler();
 	var FileTransferManager = new FileTransferManager();
+	var PeopleManager = new PeopleManager();
 	var socket;
 	
 	SocketManager.ServerConnect();
@@ -772,6 +790,7 @@ $(window).on('app-ready',function(){
 	socket.on('loginProcedureFinish',AuthorizationManager.OnLoginFinish);
 	socket.on('allChannels',Render.RenderChannelsList);
 	socket.on('privateChannel',ChannelsManager.GetPrivateChannel);
+	socket.on('friendAdded',PeopleManager.FriendAdded);
 	socket.on('connect',SocketManager.OnConnect);
 	socket.on('error',SocketManager.OnError);
 	socket.on('disconnect',SocketManager.OnDisconnect);
@@ -780,9 +799,9 @@ $(window).on('app-ready',function(){
 	socket.on('fileServerStarted',FileTransferManager.OnFileServerStarted);
 	
 	$('body').on('contextmenu',Render.ShowContextMenu);
-	$('body').on('mousedown','#textareaResizer',Handler.OnMessageFieldResize.MouseDown);
-	$('body').on('mouseup',Handler.OnMessageFieldResize.MouseUp);
-	$('body').on('mouseleave',Handler.OnMessageFieldResize.MouseLeave);
+	$('body').on('mousedown','#textareaResizer',Render.OnMessageFieldResize.MouseDown);
+	$('body').on('mouseup',Render.OnMessageFieldResize.MouseUp);
+	$('body').on('mouseleave',Render.OnMessageFieldResize.MouseLeave);
 	$('[data-action=open]').click(Render.OpenWindow);
 	$('[data-action=close]').click(Render.CloseWindow);
 	$('[data-page=channels]').click(ChannelsManager.GetChannelsList);
@@ -804,6 +823,7 @@ $(window).on('app-ready',function(){
 	$('#regSubmit').on('click',RegistrationManager.RegistrationSubmit);
 	$('#messages').on('click','.author',MessageHandler.ReferToUser);
 	$('#privateChannel').on('click',ChannelsManager.CreatePrivateChannel);
+	$('#addToFriends').on('click',PeopleManager.AddToFriends);
 	$('#logOut').on('click',AuthorizationManager.SignOut);
 	$('#sendFile').click(FileTransferManager.SendRequest);
 	$('#fileAccept').click(FileTransferManager.AcceptFile);
