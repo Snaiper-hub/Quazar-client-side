@@ -526,7 +526,7 @@ div.currentChannel{
 }
 #formContainer{
 	position: absolute;
-	bottom: 6px;
+	bottom:0;
 	width:100%;
 	overflow:hidden;
 }
@@ -624,6 +624,9 @@ div.currentChannel{
 }
 #userContextMenu div:hover{
 	background-color: #33B5E5;
+}
+#deleteFromFriends,#addToFriends{
+	display:none;
 }
 
 .toolTip{

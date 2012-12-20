@@ -16,31 +16,41 @@ $(window).on('app-ready',function(){
 		}
 		this.ShowContextMenu = function(event){
 			var el = event.target;
-			if(!(el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.id === 'messageField' || el.className === 'messageContent')){
-				event.preventDefault();
-			}
-			if (el.className === 'user'){
-				var name = $(el).html();
-				//в будущем будет свое меню, сейчас игнорим клик по себе
-				if(name === settings.login){
-					$('#userContextMenu').hide();
+			if(event.type === 'contextmenu'){
+				if(el.type !== 'textarea' && el.type !== 'text'){
+					event.preventDefault();
+				}
+				console.log(event);
+				if (el.className === 'user' || $(el).hasClass('friend')){
+					var name = $(el).html();
+					if(name === settings.login){
+						$('#userContextMenu').hide();
+						return false;
+					}
+					var friendClick = $(el).hasClass('friend');
+					if(friendClick){
+						$('#addToFriends').hide();
+						$('#deleteFromFriends').show();
+					}else{
+						$('#deleteFromFriends').hide();
+						$('#addToFriends').show();
+					}
+					$('#userContextMenu').css({
+						left:event.pageX,
+						top:event.pageY
+					}).show();
+					PeopleManager.SelectedUser = name;
+				}else if(el.className === 'notActiveMenuItem'){
 					return false;
 				}
-				$('#userContextMenu').css({
-					left:event.pageX,
-					top:event.pageY
-				}).show();
-				PeopleManager.SelectedUser = name;
-			} else if(el.className === 'notActiveMenuItem'){
-				return false;
 			} else {
 				$('#userContextMenu').hide();
-			}
-			if($('#otherNotification:visible').length){
-				$('#otherNotification').stop(true,true).delay(1500).fadeOut(function(){
-					$('#calendar').fadeIn();
-					$('#transferInfo div').empty();
-				});
+				if($('#otherNotification').filter(':visible').length){
+					$('#otherNotification').stop(true,true).delay(1500).fadeOut(function(){
+						$('#calendar').fadeIn();
+						$('#transferInfo').children('div').empty();
+					});
+				}
 			}
 		}
 		this.HideContextMenu = function(){
@@ -174,6 +184,21 @@ $(window).on('app-ready',function(){
 			$('.channelContainer[data-channel="'+channel+'"]').append('<div class="message"><span class="author">'+user+'</span> покинул канал...</div>');
 			$('.channelOnlineContainer[data-channel='+channel+']').children('div[data-login='+user+']').remove();
 		}
+		this.RenderFriends = function(friends){
+			if(friends.length){
+				friends.forEach(function(friend){
+					var online = friend.online ? 'online' : 'offline';
+					$('#peopleTab').append('<div data-name="'+friend.name+'" class="friend '+online+'">'+friend.name+'</div>');
+				});				
+			}
+		}
+		this.RenderFriend = function(data){
+			// пока по-умолчанию считаем что он онлайн, но вообще надо как-то уменй делать
+			$('#peopleTab').append('<div data-name="'+data.name+'" class="friend online">'+data.name+'</div>');
+		}
+		this.RemoveFriend = function(data){
+			$('.friend[data-name='+data.name+']').remove();
+		}
 
 		this.RenderChannelsList = function(data){
 			var channels = new Array();
@@ -183,29 +208,22 @@ $(window).on('app-ready',function(){
 			$('#channelsList').html(channels.sort().join(''));
 		};
 		
-		this.RenderFriends = function(friends){
-			if(friends.length){
-				friends.forEach(function(friend){
-					var online = friend.online ? 'online' : 'offline';
-					$('#peopleTab').append('<div class="friend '+online+'">'+friend.name+'</div>');
-				});				
-			}
-		}
+		
 		
 		this.OnMessageFieldResize = {};
 		this.OnMessageFieldResize.MouseDown = function(event){
-		var mouseStart = event.pageY;
-		var tH = $('#messageField').height();
-		$('body').mousemove(function(e){
-			var h = tH + (mouseStart-e.pageY);
-			if( h >= 36 && h <= 200 ){
-				$('#messageField').height(h);
-				$('#messages').css('padding-bottom',100+h);
-				var $el=$('#messages').find('.currentChannel');
-				var height = $el[0].scrollHeight;
-				$el.css({scrollTop: height + "px"});
-			}
-		});
+			var mouseStart = event.pageY;
+			var tH = $('#messageField').height();
+			$('body').mousemove(function(e){
+				var h = tH + (mouseStart-e.pageY);
+				if( h >= 36 && h <= 200 ){
+					$('#messageField').height(h);
+					$('#messages').css('padding-bottom',100+h);
+					var $el=$('#messages').find('.currentChannel');
+					var height = $el[0].scrollHeight;
+					$el.css({scrollTop: height + "px"});
+				}
+			});
 		};
 		this.OnMessageFieldResize.MouseUp = function(){
 			$('body').unbind('mousemove');
@@ -513,7 +531,7 @@ $(window).on('app-ready',function(){
 			Render.Scroll();
 			ChannelsManager.CurrentSpeakers[channel]='';
 		};
-		this.dropImage = function(event){
+		this.DropImage = function(event){
 			event.preventDefault();
 			var allowedTypes = ["image/png", "image/jpg", "image/gif"];
 			var file = event.dataTransfer.files[0];
@@ -610,6 +628,16 @@ $(window).on('app-ready',function(){
 		};
 		this.FriendAdded = function(data){
 			console.log('added ',data.user);
+			Render.RenderFriend(data);
+		};
+		this.RemoveFromFriends = function(){
+			var user = PeopleManager.SelectedUser;
+			console.log('removing ',user);
+			socket.emit('removeFromFriends',{user:user,login:settings.login});
+		};
+		this.FriendRemoved = function(data){
+			console.log('removed',data);
+			Render.RemoveFriend(data);
 		};
 	}
 	
@@ -791,6 +819,7 @@ $(window).on('app-ready',function(){
 	socket.on('allChannels',Render.RenderChannelsList);
 	socket.on('privateChannel',ChannelsManager.GetPrivateChannel);
 	socket.on('friendAdded',PeopleManager.FriendAdded);
+	socket.on('friendRemoved',PeopleManager.FriendRemoved);
 	socket.on('connect',SocketManager.OnConnect);
 	socket.on('error',SocketManager.OnError);
 	socket.on('disconnect',SocketManager.OnDisconnect);
@@ -802,12 +831,12 @@ $(window).on('app-ready',function(){
 	$('body').on('mousedown','#textareaResizer',Render.OnMessageFieldResize.MouseDown);
 	$('body').on('mouseup',Render.OnMessageFieldResize.MouseUp);
 	$('body').on('mouseleave',Render.OnMessageFieldResize.MouseLeave);
-	$('[data-action=open]').click(Render.OpenWindow);
-	$('[data-action=close]').click(Render.CloseWindow);
-	$('[data-page=channels]').click(ChannelsManager.GetChannelsList);
-	$('#profileSave').click(ProfileManager.SaveProfileInfo);
+	$('[data-action=open]').on('click',Render.OpenWindow);
+	$('[data-action=close]').on('click',Render.CloseWindow);
+	$('[data-page=channels]').on('click',ChannelsManager.GetChannelsList);
+	$('#profileSave').on('click',ProfileManager.SaveProfileInfo);
 	$('#settingsDivisionsList li').click(Render.SwitchSettingsPage);
-	$('#sendMessage').click(MessageHandler.SendMessage);
+	$('#sendMessage').on('click',MessageHandler.SendMessage);
 	$('#avatarSelector').click(ProfileManager.OnAvatarSelect);
 	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
 	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
@@ -816,7 +845,7 @@ $(window).on('app-ready',function(){
 	$('#rightColumnHeader').on('click','.channelListItem',ChannelsManager.OnChannelSwitch);
 	$('#rightColumnHeader').on('click','.channelLeave',ChannelsManager.OnChannelLeave);
 	$('#channelTabs').on('click','a',Render.PeopleTabsSwitch);
-	$('#createChannel').on('click',Render.addChannel);
+	$('#createChannel').on('click',Render.AddChannel);
 	$('#signIn').on('click',AuthorizationManager.SignIn);
 	$('#registration').on('click',Render.ShowRegistration);
 	$('#showLoginPanel').on('click',Render.ShowSignInForm);
@@ -824,12 +853,13 @@ $(window).on('app-ready',function(){
 	$('#messages').on('click','.author',MessageHandler.ReferToUser);
 	$('#privateChannel').on('click',ChannelsManager.CreatePrivateChannel);
 	$('#addToFriends').on('click',PeopleManager.AddToFriends);
+	$('#deleteFromFriends').on('click',PeopleManager.RemoveFromFriends);
 	$('#logOut').on('click',AuthorizationManager.SignOut);
-	$('#sendFile').click(FileTransferManager.SendRequest);
-	$('#fileAccept').click(FileTransferManager.AcceptFile);
+	$('#sendFile').on('click',FileTransferManager.SendRequest);
+	$('#fileAccept').on('click',FileTransferManager.AcceptFile);
 	//$('#cancelTransfer').click(FileTransferManager.
 	$(document).on('click',Render.ShowContextMenu);
-	$("#messages")[0].addEventListener("drop",ChannelsManager.dropImage);
+	$("#messages")[0].addEventListener("drop",ChannelsManager.DropImage);
 	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});
 	
 	var date = new Date();
