@@ -533,7 +533,7 @@ $(window).on('app-ready',function(){
 		};
 		this.DropImage = function(event){
 			event.preventDefault();
-			var allowedTypes = ["image/png", "image/jpg", "image/gif"];
+			var allowedTypes = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
 			var file = event.dataTransfer.files[0];
 			if(file.size > 1024*1024){
 				Render.OtherNotification('Размер картинки слишком большой');
