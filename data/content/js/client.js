@@ -104,7 +104,7 @@ $(window).on('app-ready',function(){
 			$('#calendar').fadeOut();
 			$('#SenderFileTransferNotification').fadeOut().fadeIn();
 		}
-		this.otherNotification = function(data){
+		this.OtherNotification = function(data){
 			$('#fileTransferNotification').fadeOut();
 			$('#fileTransferStatus').fadeOut();
 			$('#calendar').fadeOut();
@@ -536,11 +536,11 @@ $(window).on('app-ready',function(){
 			var allowedTypes = ["image/png", "image/jpg", "image/gif"];
 			var file = event.dataTransfer.files[0];
 			if(file.size > 1024*1024){
-				Render.otherNotification('Размер картинки слишком большой');
+				Render.OtherNotification('Размер картинки слишком большой');
 				return false;
 			}
 			if(allowedTypes.indexOf(file.type) < 0){
-				Render.otherNotification('Разрешены только картинки');
+				Render.OtherNotification('Разрешены только картинки');
 				return false;
 			}
 			var reader = new FileReader();
@@ -716,7 +716,7 @@ $(window).on('app-ready',function(){
 					Render.UpdateFileTransferProgress(message.bytesWritten,fileSize);
 					console.log('transfer complete');
 					socket.emit('transferComplete');
-					Render.otherNotification('Передача успешно завершена');
+					Render.OtherNotification('Передача успешно завершена');
 				}
 			});
 			fileServer.on('exit',function(){
@@ -727,16 +727,16 @@ $(window).on('app-ready',function(){
 				console.log(data.toString());
 				console.log('error in child');
 				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
-				Render.otherNotification('Ошибка передачи');
+				Render.OtherNotification('Ошибка передачи');
 			});
 			$('.cancelTransfer').one('click',function(){
 				fileServer.kill();
 				console.log('cancelTransfer event');
 				socket.emit('transferComplete');
 				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
-				Render.otherNotification('Передача отменена');
+				Render.OtherNotification('Передача отменена');
 			});
-		}
+		};
 		this.OnFileServerStarted = function(data){
 			Render.ShowFileTransferStatus();
 			var filePath = FileTransferManager.File.Path;
@@ -751,21 +751,21 @@ $(window).on('app-ready',function(){
 					console.log('transfer complete');
 					socket.emit('transferComplete');
 					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
-					Render.otherNotification('Передача успешно завершена');
+					Render.OtherNotification('Передача успешно завершена');
 				}else if(message.type === 'error'){
 					console.log(message.err);
 					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
-					Render.otherNotification('Ошибка передачи');
+					Render.OtherNotification('Ошибка передачи');
 				}
 			});
-			function cleanOnCancel(path){
-				Render.otherNotification('Передача отменена');
+			var cleanOnCancel = function(path) {
+				Render.OtherNotification('Передача отменена');
 				fs.unlink(path,function(err){
 					if(!err){
 						console.log('clean up done');
 					}
 				})
-			}
+			};
 			fileSocket.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
 				$('#sendFile').bind('click').removeClass('notActiveMenuItem');
@@ -777,7 +777,7 @@ $(window).on('app-ready',function(){
 				console.log(data.toString());
 				console.log('error in child');
 				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
-				Render.otherNotification('Ошибка передачи');
+				Render.OtherNotification('Ошибка передачи');
 			});
 			$('.cancelTransfer').one('click',function(){
 				if(fileSocket){
@@ -787,7 +787,14 @@ $(window).on('app-ready',function(){
 					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				}
 			});
-		}
+		};
+		this.CancelFile = function(){
+			socket.emit('fileRejected',{user:settings.login,from:FileTransferManager.File.From});
+			Render.OtherNotification('Передача отменена');
+		};
+		this.OnFileRejected = function(data){
+			Render.OtherNotification('Пользователь '+data.user+' не захотел принимать файл');
+		};
 	}
 	
 	var SettingsManager = new SettingsManager();
@@ -825,6 +832,7 @@ $(window).on('app-ready',function(){
 	socket.on('disconnect',SocketManager.OnDisconnect);
 	socket.on('sendFileRequest',FileTransferManager.OnRequest);
 	socket.on('fileAccepted',FileTransferManager.OnFileAccepted);
+	socket.on('fileRejected',FileTransferManager.OnFileRejected);
 	socket.on('fileServerStarted',FileTransferManager.OnFileServerStarted);
 	
 	$('body').on('contextmenu',Render.ShowContextMenu);
@@ -857,6 +865,7 @@ $(window).on('app-ready',function(){
 	$('#logOut').on('click',AuthorizationManager.SignOut);
 	$('#sendFile').on('click',FileTransferManager.SendRequest);
 	$('#fileAccept').on('click',FileTransferManager.AcceptFile);
+	$('#fileCancel').on('click',FileTransferManager.CancelFile);
 	//$('#cancelTransfer').click(FileTransferManager.
 	$(document).on('click',Render.ShowContextMenu);
 	$("#messages")[0].addEventListener("drop",ChannelsManager.DropImage);

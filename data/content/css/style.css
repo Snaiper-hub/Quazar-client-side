@@ -693,7 +693,7 @@ div.currentChannel{
 	height: 42px;
 	padding:0 10px;
 	cursor:pointer;
-	-webkit-transition:0.2s;
+	-webkit-transition:color 0.2s;
 }
 #fileInfo div:hover{
 	color:#33B5E5;
@@ -701,10 +701,6 @@ div.currentChannel{
 #fileName{
 	width: 300px;
 	overflow: hidden;
-}
-
-#fileName:hover{
-	width: auto;
 }
 
 #fileName:before{
