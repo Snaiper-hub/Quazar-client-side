@@ -475,6 +475,7 @@ button:active{}
 	cursor:pointer;
 	background:url(../img/user.png) no-repeat center left;
 	padding: 2px 0 2px 25px;
+	-webkit-transition:0.2s;
 }
 .friend.offline{
 	opacity:0.5;

@@ -3,17 +3,17 @@ $(window).on('app-ready',function(){
 	var path = require('path');
 	var fs = require('fs');
 	var child_process = require('child_process');
-	
+
 	var Render = function(){
 		this.GetFieldValue = function(field){
 			return $('#'+field).val();
 		};
 		this.SetMessageFieldValue = function(value){
 			$('#messageField').val(value);
-		}
+		};
 		this.GetMessageFiledValue = function(){
 			return $('#messageField').val();
-		}
+		};
 		this.ShowContextMenu = function(event){
 			var el = event.target;
 			if(event.type === 'contextmenu'){
@@ -52,43 +52,43 @@ $(window).on('app-ready',function(){
 					});
 				}
 			}
-		}
+		};
 		this.HideContextMenu = function(){
 			$('#userContextMenu').hide();
-		}
+		};
 		this.FadeIn = function(id){
 			$('#'+id).fadeIn();
-		}
+		};
 		this.FadeOut = function(id){
 			$('#'+id).fadeOut();
-		}
+		};
 		this.ShowLoginPanel = function(){
 			$('#loginPanel').slideDown();
-		}
+		};
 		this.HideLoginPanel = function(){
 			$('#loginPanel').slideUp();
-		}
+		};
 		this.ShowSignInForm = function(){
 			$('#registrationPanel').slideUp(function(){
 				Render.ShowLoginPanel();
 			});
-		}
+		};
 		this.Scroll = function(){
 			var $el=$('#messages').find('.currentChannel');
 			var height = $el[0].scrollHeight;
 			$el.animate({scrollTop: height + "px"}, {queue: false});
-		}
+		};
 		this.ShowRegistration = function(){
 			$('#loginPanel').slideUp(function(){
 				$('#registrationPanel').slideDown();
 			});
-		}
+		};
 		this.ShowRegistrationStatus = function(status){
 			$('#regStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
-		}
+		};
 		this.ShowSignInStatus = function(status){
 			$('#signInStatus').html(status).fadeIn().delay(1000).fadeOut(2000);
-		}
+		};
 		this.ShowFileTransferNotification = function(data){
 			$('#from').html(data.from);
 			$('#fileName').html(data.file.name);
@@ -96,14 +96,14 @@ $(window).on('app-ready',function(){
 			$('#calendar').fadeOut();
 			$('#SenderFileTransferNotification').fadeOut();
 			$('#fileTransferNotification').fadeIn();
-		}
+		};
 		this.ShowSenderFileTransferNotification = function(data){
 			$('#toUser').html('Ожидание подтверждения от '+data);
 			$('#fileTransferNotification').fadeOut();
 			$('#fileTransferStatus').fadeOut();
 			$('#calendar').fadeOut();
 			$('#SenderFileTransferNotification').fadeOut().fadeIn();
-		}
+		};
 		this.OtherNotification = function(data){
 			$('#fileTransferNotification').fadeOut();
 			$('#fileTransferStatus').fadeOut();
@@ -111,13 +111,13 @@ $(window).on('app-ready',function(){
 			$('#SenderFileTransferNotification').fadeOut();
 			$('#bar').css('width','0px');
 			$('#otherNotification').html(data).fadeIn();
-		}
+		};
 		this.ShowFileTransferStatus = function(filename){
 			$('#fileTransferNotification').fadeOut();
 			$('#calendar').fadeOut();
 			$('#fileTransferStatus').fadeIn();
 			$('#transferFileName').html(filename);
-		}
+		};
 		this.UpdateFileTransferProgress = function(bytesWritten,fileSize,speed){
 			$('#SenderFileTransferNotification').fadeOut();
 			var width = $('#progress').width();
@@ -126,7 +126,7 @@ $(window).on('app-ready',function(){
 			if(speed){
 				$('#transferSpeed').html(speed);
 			}
-		}
+		};
 		this.OpenWindow = function(){
 			$('#overlay').fadeIn();
 			var page = $(this).data('page');
@@ -174,31 +174,38 @@ $(window).on('app-ready',function(){
 				}
 			}
 		};
-		
+
 		this.RenderUser = function(user,channel){
 			$('.channelContainer[data-channel='+channel+']').append('<div class="message"><span class="author">'+user+'</span> присоединился к каналу...</div>');
 			$('.channelOnlineContainer[data-channel='+channel+']').append('<div class="user"data-login="'+user+'">'+user+'</div>');
-		}
-		
+		};
+
 		this.RemoveUser = function(user,channel){
 			$('.channelContainer[data-channel="'+channel+'"]').append('<div class="message"><span class="author">'+user+'</span> покинул канал...</div>');
 			$('.channelOnlineContainer[data-channel='+channel+']').children('div[data-login='+user+']').remove();
-		}
+		};
 		this.RenderFriends = function(friends){
 			if(friends.length){
 				friends.forEach(function(friend){
 					var online = friend.online ? 'online' : 'offline';
 					$('#peopleTab').append('<div data-name="'+friend.name+'" class="friend '+online+'">'+friend.name+'</div>');
-				});				
+				});
 			}
-		}
+		};
 		this.RenderFriend = function(data){
 			// пока по-умолчанию считаем что он онлайн, но вообще надо как-то уменй делать
 			$('#peopleTab').append('<div data-name="'+data.name+'" class="friend online">'+data.name+'</div>');
-		}
+		};
 		this.RemoveFriend = function(data){
 			$('.friend[data-name='+data.name+']').remove();
-		}
+		};
+
+		this.SetFriendOnline = function(data){
+			$('.friend[data-name='+data.name+']').removeClass('offline').addClass('online');
+		};
+		this.SetFriendOffline = function(data){
+			$('.friend[data-name='+data.name+']').removeClass('online').addClass('offline');
+		};
 
 		this.RenderChannelsList = function(data){
 			var channels = new Array();
@@ -207,9 +214,7 @@ $(window).on('app-ready',function(){
 			});
 			$('#channelsList').html(channels.sort().join(''));
 		};
-		
-		
-		
+
 		this.OnMessageFieldResize = {};
 		this.OnMessageFieldResize.MouseDown = function(event){
 			var mouseStart = event.pageY;
@@ -232,7 +237,7 @@ $(window).on('app-ready',function(){
 			$('body').unbind('mousemove');
 		};
 	};
-	
+
 	var SocketManager = function(){
 		this.OnError = function(){
 			Render.FadeOut('loader');
@@ -269,9 +274,9 @@ $(window).on('app-ready',function(){
 				socket = io.connect('http://10.50.101.28:8800/');
 				console.log('connecting...');
 			}
-		}
+		};
 	};
-	
+
 	var SettingsManager = function () {
 		this.GetSettingsObject = function(){
 			var settingsObject;
@@ -293,8 +298,8 @@ $(window).on('app-ready',function(){
 			fs.writeFileSync(__dirname+'\\settings.json',string,'utf8');
 		};
 	};
-	
-	
+
+
 	var RegistrationManager = function(){
 		this.RegistrationSubmit = function(){
 			function isValidEmailAddress(emailAddress){
@@ -370,7 +375,7 @@ $(window).on('app-ready',function(){
 			};
 			window.frame.openDialog(options,onDialogClose);
 		};
-		
+
 		this.rotatePhoto = function(degree){
 			var canvas = document.getElementById('photo');
 			var ctx = canvas.getContext('2d');
@@ -386,13 +391,13 @@ $(window).on('app-ready',function(){
 				ctx.translate(canvas.width/2,canvas.height/2);
 				ctx.rotate(degree*Math.PI/180);
 				ctx.drawImage(img,-canvas.height/2,-canvas.width/2);
-			}
+			};
 
 			var w = $('#photoArea');
 			$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
 			$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
-		}
-		
+		};
+
 		this.OnProfileInfoUpdateSuccessful = function(){
 			//
 		};
@@ -451,11 +456,11 @@ $(window).on('app-ready',function(){
 			} else return false;
 		};
 	};
-	
+
 	var ChannelsManager = function(){
 		this.CurrentChannel = '';
 		this.CurrentSpeakers = [];
-		
+
 		this.GetChannelsList = function(){
 			socket.emit('getChannels');
 		};
@@ -495,7 +500,7 @@ $(window).on('app-ready',function(){
 		};
 		this.OnChannelSwitch = function(){
 			var currentChannel = ChannelsManager.CurrentChannel;
-			var newChannel = $(this).attr('data-channel');			
+			var newChannel = $(this).attr('data-channel');
 			$('div.channelContainer[data-channel='+currentChannel+']').hide();
 			$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
 			$('.currentChannel').removeClass('currentChannel activeTabItem');
@@ -518,7 +523,7 @@ $(window).on('app-ready',function(){
 		this.OnUserJoin = function(data){
 			var user = data.login;
 			var channel = data.channel;
-			Render.RenderUser(user,channel);
+			Render.RenderUser(user,channel);		
 			Render.Scroll();
 			ChannelsManager.CurrentSpeakers[channel]='';
 		};
@@ -526,7 +531,7 @@ $(window).on('app-ready',function(){
 			var channel = data.channel;
 			if(channel !== ''){
 				var user = data.login;
-				Render.RemoveUser(user,channel);
+				Render.RemoveUser(user,channel);						
 			}
 			Render.Scroll();
 			ChannelsManager.CurrentSpeakers[channel]='';
@@ -550,11 +555,11 @@ $(window).on('app-ready',function(){
 				image.src = event.target.result;
 				image.onload = function(){
 					socket.emit('message',{content:image.src,channel:ChannelsManager.CurrentChannel,img:true});
-				}
-			}
-		}
+				};
+			};
+		};
 	};
-	
+
 	var AuthorizationManager = function(){
 		this.SignIn = function(){
 			if(Render.GetFieldValue('passwordField') !== ''){
@@ -604,7 +609,7 @@ $(window).on('app-ready',function(){
 					var w = $('#photoArea');
 					$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
 					$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
-				}
+				};
 			}
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
 			Render.RenderFriends(data.friends);
@@ -618,7 +623,7 @@ $(window).on('app-ready',function(){
 			Render.ShowSignInStatus(error);
 		};
 	};
-	
+
 	var PeopleManager = function(){
 		this.SelectedUser = '';
 		this.AddToFriends = function(){
@@ -639,8 +644,18 @@ $(window).on('app-ready',function(){
 			console.log('removed',data);
 			Render.RemoveFriend(data);
 		};
-	}
-	
+		
+		this.FriendIsOnline = function(data){
+			var name = data.name;
+			Render.SetFriendOnline({name:name});	
+		};
+		
+		this.FriendIsOffline = function(data){
+			var name = data.name;
+			Render.SetFriendOffline({name:name});	
+		};
+	};
+
 	var FileTransferManager = function(){
 		this.File = new Object();
 		this.SendRequest = function(){
@@ -650,7 +665,7 @@ $(window).on('app-ready',function(){
 				acceptTypes:{All:['*.*']},
 				multiSelect:false,
 				dirSelect:false
-			}
+			};
 			var onFileSelected = function(err,files){
 				if(!err){
 					var file = files[0];
@@ -658,7 +673,7 @@ $(window).on('app-ready',function(){
 					FileTransferManager.File.Path = file;
 					FileTransferManager.File.Size = stat.size;
 					FileTransferManager.File.Name = path.basename(file);
-					FileTransferManager.File.Type = mime.lookup(file);					
+					FileTransferManager.File.Type = mime.lookup(file);
 					console.log(FileTransferManager.File);
 					socket.emit('sendFileRequest',{
 						to:to,
@@ -673,7 +688,7 @@ $(window).on('app-ready',function(){
 				}
 			}
 			window.frame.openDialog(dialogOptions,onFileSelected);
-		}
+		};
 		this.OnRequest = function(data){
 			Render.ShowFileTransferNotification(data);
 			FileTransferManager.File.From = data.from;
@@ -682,7 +697,7 @@ $(window).on('app-ready',function(){
 			FileTransferManager.File.Type = data.file.type;
 			$('#sendFile').unbind('click').addClass('notActiveMenuItem');
 			console.log(FileTransferManager.File);
-		}
+		};
 		this.AcceptFile = function(){
 			var dialogOptions = {
 				type:'save',
@@ -690,7 +705,7 @@ $(window).on('app-ready',function(){
 				initialValue:FileTransferManager.File.Name,
 				multiSelect:false,
 				dirSelect:false
-			}
+			};
 			var onFileSelected = function(err,file){
 				if(!err){
 					FileTransferManager.File.Path = file;
@@ -698,9 +713,9 @@ $(window).on('app-ready',function(){
 					Render.ShowFileTransferStatus(FileTransferManager.File.Name);
 					socket.emit('fileAccepted',{from:FileTransferManager.File.From});
 				}
-			}				
+			};
 			window.frame.openDialog(dialogOptions,onFileSelected);
-		}
+		};
 		this.OnFileAccepted = function(){
 			Render.ShowFileTransferStatus(FileTransferManager.File.Name);
 			var filePath = FileTransferManager.File.Path;
@@ -764,7 +779,7 @@ $(window).on('app-ready',function(){
 					if(!err){
 						console.log('clean up done');
 					}
-				})
+				});
 			};
 			fileSocket.on('exit',function(){
 				console.log('child exited'+(new Date().getTime()));
@@ -795,8 +810,8 @@ $(window).on('app-ready',function(){
 		this.OnFileRejected = function(data){
 			Render.OtherNotification('Пользователь '+data.user+' не захотел принимать файл');
 		};
-	}
-	
+	};
+
 	var SettingsManager = new SettingsManager();
 	var settings = SettingsManager.GetSettingsObject();
 	var Render = new Render(window);
@@ -809,9 +824,9 @@ $(window).on('app-ready',function(){
 	var FileTransferManager = new FileTransferManager();
 	var PeopleManager = new PeopleManager();
 	var socket;
-	
+
 	SocketManager.ServerConnect();
-		
+
 	socket.on('loginSuccessful',AuthorizationManager.OnLoginSuccess);
 	socket.on('registrationSuccessful',RegistrationManager.OnRegistrationSuccess);
 	socket.on('registrationFailed',RegistrationManager.OnRegistrationFailed);
@@ -827,6 +842,8 @@ $(window).on('app-ready',function(){
 	socket.on('privateChannel',ChannelsManager.GetPrivateChannel);
 	socket.on('friendAdded',PeopleManager.FriendAdded);
 	socket.on('friendRemoved',PeopleManager.FriendRemoved);
+	socket.on('friendIsOnline',PeopleManager.FriendIsOnline);
+	socket.on('friendIsOffline',PeopleManager.FriendIsOffline);
 	socket.on('connect',SocketManager.OnConnect);
 	socket.on('error',SocketManager.OnError);
 	socket.on('disconnect',SocketManager.OnDisconnect);
@@ -834,7 +851,7 @@ $(window).on('app-ready',function(){
 	socket.on('fileAccepted',FileTransferManager.OnFileAccepted);
 	socket.on('fileRejected',FileTransferManager.OnFileRejected);
 	socket.on('fileServerStarted',FileTransferManager.OnFileServerStarted);
-	
+
 	$('body').on('contextmenu',Render.ShowContextMenu);
 	$('body').on('mousedown','#textareaResizer',Render.OnMessageFieldResize.MouseDown);
 	$('body').on('mouseup',Render.OnMessageFieldResize.MouseUp);
@@ -870,10 +887,10 @@ $(window).on('app-ready',function(){
 	$(document).on('click',Render.ShowContextMenu);
 	$("#messages")[0].addEventListener("drop",ChannelsManager.DropImage);
 	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});
-	
+
 	var date = new Date();
 	var monthes = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','ноября','декабря'];
 	var weekDays = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
 	$('#calendar').html('Сегодня '+date.getDate()+' '+monthes[date.getMonth()-1]+' '+date.getFullYear()+' года.');
-	
+
 });
