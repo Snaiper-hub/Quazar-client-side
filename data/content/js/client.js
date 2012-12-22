@@ -865,7 +865,7 @@ $(window).on('app-ready',function(){
 	$('#avatarSelector').click(ProfileManager.OnAvatarSelect);
 	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
 	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
-	$('#messageField').keypress(function(e){if(e.which === 13){MessageHandler.SendMessage;return false;}});
+	$('#messageField').keypress(function(e){if(e.which === 13){MessageHandler.SendMessage();return false;}});
 	$('#channelsList').on('dblclick','.channel',ChannelsManager.JoinChannel);
 	$('#rightColumnHeader').on('click','.channelListItem',ChannelsManager.OnChannelSwitch);
 	$('#rightColumnHeader').on('click','.channelLeave',ChannelsManager.OnChannelLeave);
