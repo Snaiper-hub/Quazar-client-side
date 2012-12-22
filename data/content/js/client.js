@@ -210,7 +210,9 @@ $(window).on('app-ready',function(){
 		this.RenderChannelsList = function(data){
 			var channels = new Array();
 			data.channels.forEach(function(channel){
-				channels.push('<div class="channel">' + channel.name + '</div>');
+				var name = channel.name;
+				var header = channel.header || '';
+				channels.push('<div class="channel"><div class="channelName">' + name + '</div><div class="channelHeader">'+header+'</div></div>');
 			});
 			$('#channelsList').html(channels.sort().join(''));
 		};
@@ -465,7 +467,7 @@ $(window).on('app-ready',function(){
 			socket.emit('getChannels');
 		};
 		this.JoinChannel = function(){
-			var name = $(this).html();
+			var name = $(this).children('.channelName').html();
 			socket.emit('channelJoin',{login:settings.login,channel:name});
 		};
 		this.AddChannel = function(){

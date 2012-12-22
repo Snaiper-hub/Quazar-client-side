@@ -60,16 +60,7 @@ input:focus,textarea:focus{
 }
 .genericFooter button{
 	float:right;
-	border: none;
-	background-color: #E0E0E0;
-	height: 45px;
-	line-height: 45px;
-	padding: 0 10px;
-	margin: 0;
-}
-.genericFooter button:hover{
-	background-color: #33B5E5;
-	border: none;
+	margin:5px;
 }
 button{
 	display: block;
@@ -347,13 +338,28 @@ button:active{}
 #channelTabs{
 	height: -webkit-calc(100% - 102px);
 }
+#channelListHeader{
+	line-height: 32px;
+	overflow:hidden;
+	background: #33B5E5;
+	color:#fff;
+}
+#channelListHeader div{
+	float:left;
+	padding:0 25px;
+}
 .channel{
 	line-height: 32px;
-	padding-left:5px;
 	cursor:pointer;
+	overflow:hidden;
 }
 .channel:hover{
 	background: #33B5E5;
+	color:#fff;
+}
+.channel .channelName,.channel .channelHeader{
+	float:left;
+	padding:0 25px;
 }
 
 #friendsTabLink,#channelOnlineTabLink{
