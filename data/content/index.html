@@ -5,7 +5,9 @@
 		<title>Quazar</title>
 		<link rel="stylesheet" href="css/reset.min.css">
 		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="css/crop.css">
 		<script src="js/jquery-1.8.3.min.js"></script>
+		<script src="js/crop.js"></script>
 		<script src="js/socket.io.min.js"></script>
 		<script src="js/client.js"></script>
 	</head>
@@ -46,17 +48,21 @@
 				<div class="genericPageHeader">Мой профиль</div>
 				<div class="genericPageContent">
 					<div id="profileLeft" >
-						<div id="photoArea"><canvas id="photo"></canvas></div>
-						<button id="avatarSelector">Выбрать аватар</button>
-						<img style="display:none;" id="hidePhoto" src=""/>
+						<div id="ImageArea"><canvas id="profileImage"></canvas></div>
+						<div>
+						<button id="imageSelector">Выбрать изображение</button>
+						</div>
+						<img style="display:none;" id="hideImage" src=""/>
 					</div>
 					<div id="profileRight" >
+						Аватар: <br><canvas width="50px" height="50px" id="avatar"></canvas><br>
 						Имя: <input id="userName" type="text" placeholder="Имя" />
 						Фамилия: <input id="userSurname" type="text" placeholder="Фамилия" />
 						Год рождения: <input id="userBirthday" type="text" placeholder="Год" />
-						<img width="150px" height="150px" id="crop_result" src=""/>
 						<button id="rotatePhotoLeft">Влево</button>
 						<button id="rotatePhotoRight">Вправо</button>
+						<button id="SelectAvatar">Выбрать аватар</button>
+						<button id="UseAnAvatar">Использовать как аватар</button>
 					</div>
 				</div>
 				<div class="genericFooter">

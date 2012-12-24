@@ -20,7 +20,6 @@ $(window).on('app-ready',function(){
 				if(el.type !== 'textarea' && el.type !== 'text'){
 					event.preventDefault();
 				}
-				console.log(event);
 				if (el.className === 'user' || $(el).hasClass('friend')){
 					var name = $(el).html();
 					if(name === settings.login){
@@ -333,33 +332,50 @@ $(window).on('app-ready',function(){
 			var userName = Render.GetFieldValue('userName');
 			var userSurname = Render.GetFieldValue('userSurname');
 			var userBirthday = Render.GetFieldValue('userBirthday');
-			var userPhoto = document.getElementById('photo').toDataURL();
-			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto});
+			var userPhoto = document.getElementById('profileImage').toDataURL();
+			var userAvatar = document.getElementById('avatar').toDataURL();
+			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto,userAvatar:userAvatar});
 			Render.FadeOut('overlay');
 		};
-		this.OnAvatarSelect = function(){
+		this.AvatarAbort = function(){
+			var avatar = document.getElementById('avatar').getContext('2d');
+			avatar.clearRect(0,0,50,50);
+			
+			$('.holder').remove();
+			$('#profileImage').removeData('crop');
+		};
+		this.OnImageSelect = function(){
 			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png'] }, multiSelect:false, dirSelect:false};
 			var onDialogClose = function(err,files){
 				if(!err){
+					ProfileManager.AvatarAbort();
+					$('#imageSelector').html('Выбрать новое');
 					var file = files[0];
 					var type = mime.lookup(file);
 					var stat = fs.statSync(file);
 					var name = path.basename(file);
 					var img = fs.readFileSync(file).toString('base64');
-						$('#hidePhoto').attr('src','data:'+type+';base64,' +img).load(function(){
-							var photo = document.getElementById('hidePhoto');
-							var canvas = document.getElementById('photo');
-							var photoAreaW = 400;
-							var photoAreaH = 400;
-							// size photo area
-							var hW = $('#hidePhoto').width();
-							var hH = $('#hidePhoto').height();
+						$('#hideImage').attr('src','data:'+type+';base64,' +img).load(function(){
+							var hW = $('#hideImage').width();
+							var hH = $('#hideImage').height();
 							// get size of a hidden photo
+							if( hW <= 50 || hH <= 50 ){
+								$('#SelectAvatar').hide();
+								$('#UseAnAvatar').show();
+							} else {
+								$('#UseAnAvatar').hide();
+								$('#SelectAvatar').show();
+							}
+							var photo = document.getElementById('hideImage');
+							var canvas = document.getElementById('profileImage');
+							var ImageAreaW = 450;
+							var ImageAreaH = 450;
+							// size photo area
 							var ctx=canvas.getContext('2d');
-							var ratioW = photoAreaW/hW;
-							var ratioH = photoAreaH/hH;
+							var ratioW = ImageAreaW/hW;
+							var ratioH = ImageAreaH/hH;
 							// ratio
-							if(hW > photoAreaW || hH > photoAreaH ){
+							if(hW >= ImageAreaW || hH >= ImageAreaH ){
 								var ratio = Math.min(ratioW,ratioH);
 								canvas.width = hW*ratio;
 								canvas.height = hH*ratio;
@@ -368,8 +384,8 @@ $(window).on('app-ready',function(){
 								canvas.height = hH;
 							}
 							ctx.drawImage(photo,0,0,canvas.width, canvas.height);
-							$('#photo').css('top',(photoAreaH-canvas.height)/2 + 'px');
-							$('#photo').css('left',(photoAreaW-canvas.width)/2 + 'px');
+							$('#profileImage').css('top',(ImageAreaH-canvas.height)/2 + 'px');
+							$('#profileImage').css('left',(ImageAreaW-canvas.width)/2 + 'px');
 					});
 				} else {
 					console.log('error in image selection');
@@ -377,9 +393,32 @@ $(window).on('app-ready',function(){
 			};
 			window.frame.openDialog(options,onDialogClose);
 		};
-
+		
+		this.AnAvatar = function(){
+			var avatar = document.getElementById('avatar').getContext('2d');
+			var canvas = document.getElementById('profileImage');
+			avatar.clearRect(0,0,50,50);
+			avatar.drawImage(canvas,(50-canvas.width)/2,(50-canvas.height)/2);
+		};
+		
+		this.SelectAvatar = function(){
+			var avatar = document.getElementById('avatar').getContext('2d');
+			var canvas = document.getElementById('profileImage');
+			
+			this.showPreview = function(coords){
+				avatar.drawImage(canvas,coords.x,coords.y,coords.w,coords.h,0,0,50,50);
+			};
+			
+			$('#profileImage').crop({
+				minSize: [50, 50],
+				setSelect: [ ($('#profileImage').width()-50)/2, ($('#profileImage').height()-50)/2, $('#profileImage').width()/2, $('#profileImage').height()/2 ],
+				onChange: this.showPreview,
+				onSelect: this.showPreview,
+				aspectRatio: 1
+			});
+		};
 		this.rotatePhoto = function(degree){
-			var canvas = document.getElementById('photo');
+			var canvas = document.getElementById('profileImage');
 			var ctx = canvas.getContext('2d');
 			var img = new Image();
 			img.src = canvas.toDataURL();
@@ -412,17 +451,15 @@ $(window).on('app-ready',function(){
 		this.OnMessage = function(data){
 			var channel = data.channel;
 			var dateString = '<span>'+data.date.hours+':'+data.date.mins+'</span>';
-			var authorString = '';
-			var content = '';
 			if(data.img === true){
-				content = '<img src="">';
+				var content = '<img src="">';
 			} else {
-				content = data.content;
+				var content = data.content;
 			}
 			if(data.login === settings.login){
-				authorString='<span class="author me">'+settings.login+'</span>';
+				var authorString='<span class="author me">'+settings.login+'</span>';
 			}else{
-				authorString='<span class="author">'+data.login+'</span>';
+				var authorString='<span class="author">'+data.login+'</span>';
 				if(!$('.channelListItem[data-channel='+channel+']').hasClass('currentChannel')){
 					$('.channelListItem[data-channel='+channel+']').addClass('waitTabItem');
 				}
@@ -435,7 +472,7 @@ $(window).on('app-ready',function(){
 				dateString+'</div><div class="messageContent">'+content+'</div></div>');
 				ChannelsManager.CurrentSpeakers[channel]=data.login;
 			}
-			if(data.img === true) $('.channelContainer[data-channel='+channel+'] img').last().attr('src',data.content);
+			if(data.img === true) $('.channelContainer[data-channel='+channel+'] .messageContent img:last').attr('src',data.content).css('max-width',$('.messageContent').width());
 			Render.Scroll();
 		};
 		this.SendMessage = function(){
@@ -600,17 +637,24 @@ $(window).on('app-ready',function(){
 			$('#userSurname').val(data.profileInfo.surname);
 			$('#userBirthday').val(data.profileInfo.birthday);
 			if(data.profileInfo.photo !== ''){
-				var canvas = document.getElementById('photo')
+				$('#imageSelector').html('Выбрать новое');
+				var canvas = document.getElementById('profileImage');
 				var ctx = canvas.getContext('2d');
-				var img = document.getElementById('hidePhoto');
+				var img = document.getElementById('hideImage');
 				img.src = data.profileInfo.photo;
 				img.onload = function(){
 					canvas.width = img.width;
 					canvas.height = img.height;
 					ctx.drawImage(img,0,0);
-					var w = $('#photoArea');
-					$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
-					$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
+					var w = $('#ImageArea');
+					$('#profileImage').css('top',(w.height()-canvas.height)/2 + 'px');
+					$('#profileImage').css('left',(w.width()-canvas.width)/2 + 'px');
+					
+					var avatar = document.getElementById('avatar').getContext('2d');
+					img.src = data.profileInfo.avatar;
+					img.onload = function(){
+						avatar.drawImage(img,0,0);
+					}
 				};
 			}
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
@@ -864,7 +908,8 @@ $(window).on('app-ready',function(){
 	$('#profileSave').on('click',ProfileManager.SaveProfileInfo);
 	$('#settingsDivisionsList li').click(Render.SwitchSettingsPage);
 	$('#sendMessage').on('click',MessageHandler.SendMessage);
-	$('#avatarSelector').click(ProfileManager.OnAvatarSelect);
+	$('#imageSelector').click(ProfileManager.OnImageSelect);
+	$('#SelectAvatar').click(ProfileManager.SelectAvatar);
 	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
 	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
 	$('#messageField').keypress(function(e){if(e.which === 13){MessageHandler.SendMessage();return false;}});

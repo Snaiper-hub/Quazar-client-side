@@ -291,7 +291,7 @@ button:active{}
 	border-bottom:5px transparent solid;
 }
 
-#photo{
+#profileImage{
 	position:absolute;
 }
 
@@ -299,11 +299,15 @@ button:active{}
 	float:left;
 }
 
-#photoArea{
-	height: 400px;
-	width: 400px;
+#ImageArea{
+	height: 450px;
+	width: 450px;
 	margin: 10px;
 	position: relative;
+}
+
+#UseAnAvatar{
+	display:none;
 }
 
 /* перевести все визуальные эффекты выделения списков на этот класс в будущем */
