@@ -334,6 +334,8 @@ $(window).on('app-ready',function(){
 			var userBirthday = Render.GetFieldValue('userBirthday');
 			var userPhoto = document.getElementById('profileImage').toDataURL();
 			var userAvatar = document.getElementById('avatar').toDataURL();
+			$('.holder').remove();
+			$('#profileImage').removeData('crop');
 			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto,userAvatar:userAvatar});
 			Render.FadeOut('overlay');
 		};
