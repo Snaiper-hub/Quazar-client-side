@@ -317,14 +317,15 @@ button:active{}
 }
 #rotate{
 	position: absolute;
+	cursor:pointer;
 }
-#rotatePhotoLeft{
+#rotateImageLeft{
 	background-image: url(../img/image-rotate-left.png);
 	width:64px;
 	height:64px;
 	float:left;
 }
-#rotatePhotoRight{
+#rotateImageRight{
 	background-image: url(../img/image-rotate-right.png);
 	width:64px;
 	height:64px;

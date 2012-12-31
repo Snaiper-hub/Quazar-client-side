@@ -136,6 +136,7 @@ $(window).on('app-ready',function(){
 			$('#overlay').fadeOut(function(){
 				page.fadeOut();
 			});
+			if(page[0].id === 'profile'){ProfileManager.AvatarAbort(true);}
 		};
 		this.SwitchSettingsPage = function(){
 			var index = $('#settingsDivisionsList').find('li').index(this);
@@ -237,6 +238,20 @@ $(window).on('app-ready',function(){
 		this.OnMessageFieldResize.MouseLeave = function(){
 			$('body').unbind('mousemove');
 		};
+		this.LoadImage = function(id,data,callback){
+			var img = document.getElementById('Temp'+id);
+			img.src = data;
+			img.onload = function(){
+				if(callback) callback(img,img.width,img.height);
+			}
+		}
+		this.PositioningPrifileImage = function(w,h){
+			$('#profileImage').css('top',($('#ImageArea').height()-h)/2 + 'px');
+			$('#profileImage').css('left',($('#ImageArea').width()-w)/2 + 'px');
+			
+			$('#rotate').css('bottom',($('#ImageArea').height()-h)/2 + 'px');
+			$('#rotate').css('left',($('#ImageArea').width()-128)/2 + 'px');
+		}
 	};
 
 	var SocketManager = function(){
@@ -338,56 +353,63 @@ $(window).on('app-ready',function(){
 			$('#profileImage').removeData('crop');
 			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto,userAvatar:userAvatar});
 			Render.FadeOut('overlay');
+			ProfileManager.AvatarAbort();
 		};
-		this.AvatarAbort = function(){
-			var avatar = document.getElementById('avatar').getContext('2d');
-			avatar.clearRect(0,0,50,50);
+		this.AvatarAbort = function(restore){
+			if(restore){
+				var avatar = document.getElementById('avatar').getContext('2d');
+				var TempAvatar = document.getElementById('TempAvatar');
+				avatar.drawImage(TempAvatar,0,0);
+			} else {
+				Render.LoadImage('Avatar',document.getElementById('avatar').toDataURL());
+			}
 			
 			$('.holder').remove();
 			$('#profileImage').removeData('crop');
+			
+			$('#AbortAvatarSelect').hide();
+			$('#SelectAvatar').show();
 		};
 		this.OnImageSelect = function(){
-			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png'] }, multiSelect:false, dirSelect:false};
+			var options = {type:'open', acceptTypes: { Images:['*.jpg','*.png','*.gif'] }, multiSelect:false, dirSelect:false};
 			var onDialogClose = function(err,files){
 				if(!err){
-					ProfileManager.AvatarAbort();
+					ProfileManager.AvatarAbort(true);
 					$('#imageSelector').html('Выбрать новое');
 					var file = files[0];
 					var type = mime.lookup(file);
 					var stat = fs.statSync(file);
 					var name = path.basename(file);
 					var img = fs.readFileSync(file).toString('base64');
-						$('#hideImage').attr('src','data:'+type+';base64,' +img).load(function(){
-							var hW = $('#hideImage').width();
-							var hH = $('#hideImage').height();
-							// get size of a hidden photo
-							if( hW <= 50 || hH <= 50 ){
-								$('#SelectAvatar').hide();
-								$('#UseAnAvatar').show();
-							} else {
-								$('#UseAnAvatar').hide();
-								$('#SelectAvatar').show();
-							}
-							var photo = document.getElementById('hideImage');
-							var canvas = document.getElementById('profileImage');
-							var ImageAreaW = 450;
-							var ImageAreaH = 450;
-							// size photo area
-							var ctx=canvas.getContext('2d');
-							var ratioW = ImageAreaW/hW;
-							var ratioH = ImageAreaH/hH;
-							// ratio
-							if(hW >= ImageAreaW || hH >= ImageAreaH ){
-								var ratio = Math.min(ratioW,ratioH);
-								canvas.width = hW*ratio;
-								canvas.height = hH*ratio;
-							} else {
-								canvas.width = hW;
-								canvas.height = hH;
-							}
-							ctx.drawImage(photo,0,0,canvas.width, canvas.height);
-							$('#profileImage').css('top',(ImageAreaH-canvas.height)/2 + 'px');
-							$('#profileImage').css('left',(ImageAreaW-canvas.width)/2 + 'px');
+						
+					Render.LoadImage('Image','data:'+type+';base64,'+img,function(img,w,h){
+						// get size of a hidden photo
+						if( w <= 50 || h <= 50 ){
+							$('#SelectAvatar').attr("disabled","disabled");
+							//$('#SelectAvatar').hide();
+							//$('#UseAnAvatar').show();
+						} else {
+							//$('#UseAnAvatar').hide();
+							$('#SelectAvatar').show().removeAttr("disabled");
+						}
+						var canvas = document.getElementById('profileImage');
+						var ImageAreaW = $('#ImageArea').width();
+						var ImageAreaH = $('#ImageArea').height();
+						// size photo area
+						var ctx=canvas.getContext('2d');
+						var ratioW = ImageAreaW/w;
+						var ratioH = ImageAreaH/h;
+						// ratio
+						if(w >= ImageAreaW || h >= ImageAreaH ){
+							var ratio = Math.min(ratioW,ratioH);
+							canvas.width = w*ratio;
+							canvas.height = h*ratio;
+						} else {
+							canvas.width = w;
+							canvas.height = h;
+						}
+						ctx.drawImage(img,0,0,canvas.width,canvas.height);
+						Render.PositioningPrifileImage(canvas.width,canvas.height);
 					});
 				} else {
 					console.log('error in image selection');
@@ -396,12 +418,11 @@ $(window).on('app-ready',function(){
 			window.frame.openDialog(options,onDialogClose);
 		};
 		
-		this.AnAvatar = function(){
-			var avatar = document.getElementById('avatar').getContext('2d');
-			var canvas = document.getElementById('profileImage');
-			avatar.clearRect(0,0,50,50);
-			avatar.drawImage(canvas,(50-canvas.width)/2,(50-canvas.height)/2);
-		};
+		//this.AnAvatar = function(){
+			//var avatar = document.getElementById('avatar').getContext('2d');
+			//var canvas = document.getElementById('profileImage');
+			//avatar.drawImage(canvas,(50-canvas.width)/2,(50-canvas.height)/2);
+		//};
 		
 		this.SelectAvatar = function(){
 			var avatar = document.getElementById('avatar').getContext('2d');
@@ -418,28 +439,21 @@ $(window).on('app-ready',function(){
 				onSelect: this.showPreview,
 				aspectRatio: 1
 			});
+			$('#SelectAvatar').hide();
+			$('#AbortAvatarSelect').show();
 		};
 		this.rotatePhoto = function(degree){
 			var canvas = document.getElementById('profileImage');
 			var ctx = canvas.getContext('2d');
-			var img = new Image();
-			img.src = canvas.toDataURL();
-
-			var width = canvas.width;
-			var height = canvas.height;
-			canvas.width = height;
-			canvas.height = width;
-
-			img.onload = function(){
+			Render.LoadImage('Image',canvas.toDataURL(),function(img,w,h){
+				canvas.width = h;
+				canvas.height = w;
 				ctx.translate(canvas.width/2,canvas.height/2);
 				ctx.rotate(degree*Math.PI/180);
 				ctx.drawImage(img,-canvas.height/2,-canvas.width/2);
-			};
-
-			var w = $('#photoArea');
-			$('#photo').css('top',(w.height()-canvas.height)/2 + 'px');
-			$('#photo').css('left',(w.width()-canvas.width)/2 + 'px');
-		};
+				Render.PositioningPrifileImage(canvas.width,canvas.height);
+			});
+		}
 
 		this.OnProfileInfoUpdateSuccessful = function(){
 			//
@@ -642,22 +656,18 @@ $(window).on('app-ready',function(){
 				$('#imageSelector').html('Выбрать новое');
 				var canvas = document.getElementById('profileImage');
 				var ctx = canvas.getContext('2d');
-				var img = document.getElementById('hideImage');
-				img.src = data.profileInfo.photo;
-				img.onload = function(){
-					canvas.width = img.width;
-					canvas.height = img.height;
+				Render.LoadImage('Image',data.profileInfo.photo,function(img,w,h){
+					canvas.width = w;
+					canvas.height = h;
 					ctx.drawImage(img,0,0);
-					var w = $('#ImageArea');
-					$('#profileImage').css('top',(w.height()-canvas.height)/2 + 'px');
-					$('#profileImage').css('left',(w.width()-canvas.width)/2 + 'px');
-					
-					var avatar = document.getElementById('avatar').getContext('2d');
-					img.src = data.profileInfo.avatar;
-					img.onload = function(){
-						avatar.drawImage(img,0,0);
-					}
-				};
+					Render.PositioningPrifileImage(canvas.width,canvas.height);
+				});
+			}
+			if(data.profileInfo.avatar !== ''){
+				var avatar = document.getElementById('avatar').getContext('2d');
+				Render.LoadImage('Avatar',data.profileInfo.avatar,function(img){
+					avatar.drawImage(img,0,0);
+				});
 			}
 			if(data.hash && settings.autoLogin===true) SettingsManager.SaveSetting('hash',data.hash);
 			Render.RenderFriends(data.friends);
@@ -910,10 +920,12 @@ $(window).on('app-ready',function(){
 	$('#profileSave').on('click',ProfileManager.SaveProfileInfo);
 	$('#settingsDivisionsList li').click(Render.SwitchSettingsPage);
 	$('#sendMessage').on('click',MessageHandler.SendMessage);
-	$('#imageSelector').click(ProfileManager.OnImageSelect);
+	$('#ImageSelector').click(ProfileManager.OnImageSelect);
 	$('#SelectAvatar').click(ProfileManager.SelectAvatar);
-	$('#rotatePhotoLeft').click(function(){ProfileManager.rotatePhoto(-90);});
-	$('#rotatePhotoRight').click(function(){ProfileManager.rotatePhoto(90);});
+	$('#AbortAvatarSelect').click(function(){ProfileManager.AvatarAbort(true);});
+	$('#UseAnAvatar').click(ProfileManager.AnAvatar);
+	$('#rotateImageLeft').click(function(){ProfileManager.rotatePhoto(-90);});
+	$('#rotateImageRight').click(function(){ProfileManager.rotatePhoto(90);});
 	$('#messageField').keypress(function(e){if(e.which === 13){MessageHandler.SendMessage();return false;}});
 	$('#channelsList').on('dblclick','.channel',ChannelsManager.JoinChannel);
 	$('#rightColumnHeader').on('click','.channelListItem',ChannelsManager.OnChannelSwitch);
