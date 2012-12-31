@@ -445,14 +445,17 @@ $(window).on('app-ready',function(){
 		this.rotatePhoto = function(degree){
 			var canvas = document.getElementById('profileImage');
 			var ctx = canvas.getContext('2d');
-			Render.LoadImage('Image',canvas.toDataURL(),function(img,w,h){
-				canvas.width = h;
-				canvas.height = w;
-				ctx.translate(canvas.width/2,canvas.height/2);
-				ctx.rotate(degree*Math.PI/180);
-				ctx.drawImage(img,-canvas.height/2,-canvas.width/2);
-				Render.PositioningPrifileImage(canvas.width,canvas.height);
-			});
+			var TempImage = document.getElementById('TempImage')
+			var w = canvas.width;
+			var h = canvas.height;
+			canvas.width = h;
+			canvas.height = w;
+			
+			ctx.translate(canvas.width/2,canvas.height/2);
+			ctx.rotate(degree*Math.PI/180);
+			ctx.drawImage(TempImage,-canvas.height/2,-canvas.width/2);
+			Render.LoadImage('Image',canvas.toDataURL());
+			Render.PositioningPrifileImage(canvas.width,canvas.height);
 		}
 
 		this.OnProfileInfoUpdateSuccessful = function(){
