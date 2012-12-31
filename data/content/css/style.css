@@ -306,8 +306,29 @@ button:active{}
 	position: relative;
 }
 
-#UseAnAvatar{
+#UseAnAvatar,#AbortAvatarSelect{
 	display:none;
+}
+#ImageSelector{
+	float: left;
+}
+#SelectAvatar,#UseAnAvatar,#AbortAvatarSelect{
+	float:right;
+}
+#rotate{
+	position: absolute;
+}
+#rotatePhotoLeft{
+	background-image: url(../img/image-rotate-left.png);
+	width:64px;
+	height:64px;
+	float:left;
+}
+#rotatePhotoRight{
+	background-image: url(../img/image-rotate-right.png);
+	width:64px;
+	height:64px;
+	float:right;
 }
 
 /* перевести все визуальные эффекты выделения списков на этот класс в будущем */
@@ -759,3 +780,25 @@ div.currentChannel{
 	float:right;
 	margin: 0px 10px;
 }
+
+.holder{position:absolute;z-index:2;}
+.tracker{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;height:100%;width:100%;}
+.vline{height:100%;width:1px!important;}
+.hline{height:1px!important;width:100%;}
+.vline.right{right:0;}
+.hline.bottom{bottom:0;}
+.handle{background-color:#333;border:1px #eee solid;font-size:1px;}
+.handle.ord-n{left:50%;margin-left:-4px;margin-top:-4px;top:0;}
+.handle.ord-s{bottom:0;left:50%;margin-bottom:-4px;margin-left:-4px;}
+.handle.ord-e{margin-right:-4px;margin-top:-4px;right:0;top:50%;}
+.handle.ord-w{left:0;margin-left:-4px;margin-top:-4px;top:50%;}
+.handle.ord-nw{left:0;margin-left:-4px;margin-top:-4px;top:0;}
+.handle.ord-ne{margin-right:-4px;margin-top:-4px;right:0;top:0;}
+.handle.ord-se{bottom:0;margin-bottom:-4px;margin-right:-4px;right:0;}
+.handle.ord-sw{bottom:0;left:0;margin-bottom:-4px;margin-left:-4px;}
+.dragbar.ord-n,.dragbar.ord-s{height:7px;width:100%;}
+.dragbar.ord-e,.dragbar.ord-w{height:100%;width:7px;}
+.dragbar.ord-n{margin-top:-4px;}
+.dragbar.ord-s{bottom:0;margin-bottom:-4px;}
+.dragbar.ord-e{margin-right:-4px;right:0;}
+.dragbar.ord-w{margin-left:-4px;}
