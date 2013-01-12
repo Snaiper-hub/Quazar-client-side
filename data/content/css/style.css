@@ -338,7 +338,7 @@ button:active{}
 	background-color:#33B5E5!important;
 }
 
-.activeTabItem{
+#channelsRow .currentChannel,.activeTabItem{
 	color:#000;
 	border-bottom:5px #33B5E5 solid!important;
 }
@@ -509,7 +509,7 @@ button:active{}
 	padding: 2px 0 2px 25px;
 	-webkit-transition:0.2s;
 }
-.friend.offline{
+.friend .offline{
 	opacity:0.5;
 }
 
@@ -552,13 +552,13 @@ button:active{}
 
 div.currentChannel{
 	width:100%;
-	height: 100%;
+	height:100%;
 	display:block;
 	overflow-y:scroll;
-	word-wrap: break-word;
+	word-wrap:break-word;
 }
 #formContainer{
-	position: absolute;
+	position:absolute;
 	bottom:0;
 	width:100%;
 	overflow:hidden;

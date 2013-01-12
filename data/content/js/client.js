@@ -55,12 +55,6 @@ $(window).on('app-ready',function(){
 		this.HideContextMenu = function(){
 			$('#userContextMenu').hide();
 		};
-		this.FadeIn = function(id){
-			$('#'+id).fadeIn();
-		};
-		this.FadeOut = function(id){
-			$('#'+id).fadeOut();
-		};
 		this.ShowLoginPanel = function(){
 			$('#loginPanel').slideDown();
 		};
@@ -92,28 +86,20 @@ $(window).on('app-ready',function(){
 			$('#from').html(data.from);
 			$('#fileName').html(data.file.name);
 			$('#fileSize').html(data.file.size);
-			$('#calendar').fadeOut();
-			$('#SenderFileTransferNotification').fadeOut();
+			$('#statusBar div').fadeOut();
 			$('#fileTransferNotification').fadeIn();
 		};
 		this.ShowSenderFileTransferNotification = function(data){
 			$('#toUser').html('Ожидание подтверждения от '+data);
-			$('#fileTransferNotification').fadeOut();
-			$('#fileTransferStatus').fadeOut();
-			$('#calendar').fadeOut();
-			$('#SenderFileTransferNotification').fadeOut().fadeIn();
+			$('#statusBar div').fadeOut();
+			$('#SenderFileTransferNotification').fadeIn();
 		};
 		this.OtherNotification = function(data){
-			$('#fileTransferNotification').fadeOut();
-			$('#fileTransferStatus').fadeOut();
-			$('#calendar').fadeOut();
-			$('#SenderFileTransferNotification').fadeOut();
-			$('#bar').css('width','0px');
+			$('#statusBar div').fadeOut();
 			$('#otherNotification').html(data).fadeIn();
 		};
 		this.ShowFileTransferStatus = function(filename){
-			$('#fileTransferNotification').fadeOut();
-			$('#calendar').fadeOut();
+			$('#statusBar div').fadeOut();
 			$('#fileTransferStatus').fadeIn();
 			$('#transferFileName').html(filename);
 		};
@@ -159,15 +145,13 @@ $(window).on('app-ready',function(){
 				var header = channels[i].header;
 				$('#channelsRow').append('<div class="channelListItem" data-channel="'+name+'">'+name+'<span class="channelLeave"></span></div>');
 				$('#messages').append('<div class="channelContainer" data-channel="'+name+'"></div>');
+				$('#channelOnlineTab').append('<div class="channelOnlineContainer" data-channel="'+name+'"></div>');
 				ChannelsManager.CurrentSpeakers[name] = '';
 				$('.channelContainer[data-channel='+name+']').append('<div class="channelTopic">'+header+'</div>');
 				if(i===0){
 					ChannelsManager.CurrentChannel = name;
-					$('#channelsRow').children('div').first().addClass('currentChannel activeTabItem');
-					$('.channelContainer').first().addClass('currentChannel');
-					$('#channelOnlineTab').append('<div class="channelOnlineContainer currentChannel" data-channel="'+name+'"></div>');
-				}else{
-					$('#channelOnlineTab').append('<div class="channelOnlineContainer" data-channel="'+name+'"></div>');
+					$('.currentChannel').removeClass('currentChannel');
+					$('*[data-channel='+name+']').addClass('currentChannel');
 				}
 				for(var ii = 0;ii<online.length;ii++){
 					$('.channelOnlineContainer[data-channel='+name+']').append('<div class="user" data-login="'+online[ii]+'">'+online[ii]+'</div>');
@@ -193,7 +177,7 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.RenderFriend = function(data){
-			// пока по-умолчанию считаем что он онлайн, но вообще надо как-то уменй делать
+			// пока по-умолчанию считаем что он онлайн, но вообще надо как-то умней делать
 			$('#peopleTab').append('<div data-name="'+data.name+'" class="friend online">'+data.name+'</div>');
 		};
 		this.RemoveFriend = function(data){
@@ -208,7 +192,7 @@ $(window).on('app-ready',function(){
 		};
 
 		this.RenderChannelsList = function(data){
-			var channels = new Array();
+			var channels = [];
 			data.channels.forEach(function(channel){
 				var name = channel.name;
 				var header = channel.header || '';
@@ -256,7 +240,7 @@ $(window).on('app-ready',function(){
 
 	var SocketManager = function(){
 		this.OnError = function(){
-			Render.FadeOut('loader');
+			$('#loader').fadeOut();
 			$('#serverOffline').slideDown();
 			setTimeout(function(){SocketManager.ServerConnect(true);}, 20000);
 			console.log('Ошибка соединения');
@@ -266,7 +250,7 @@ $(window).on('app-ready',function(){
 			if(settings.login && settings.hash && settings.autoLogin===true){
 				AuthorizationManager.SignIn();
 			} else {
-				Render.FadeOut('loader');
+				$('#loader').fadeOut();
 				Render.ShowLoginPanel();
 			}
 		};
@@ -282,7 +266,7 @@ $(window).on('app-ready',function(){
 			console.log('Дисконнект');
 		};
 		this.ServerConnect = function(rc){
-			Render.FadeIn('loader');
+			$('#loader').fadeIn();
 			if(rc){
 				socket.socket.connect();
 				console.log('reConnecting...');
@@ -352,7 +336,7 @@ $(window).on('app-ready',function(){
 			$('.holder').remove();
 			$('#profileImage').removeData('crop');
 			socket.emit('profileInfo',{login:settings.login,userName:userName,userSurname:userSurname,userBirthday:userBirthday,userPhoto:userPhoto,userAvatar:userAvatar});
-			Render.FadeOut('overlay');
+			$('#overlay').fadeOut();
 			ProfileManager.AvatarAbort();
 		};
 		this.AvatarAbort = function(restore){
@@ -518,6 +502,7 @@ $(window).on('app-ready',function(){
 	var ChannelsManager = function(){
 		this.CurrentChannel = '';
 		this.CurrentSpeakers = [];
+		this.TabHistory = [];
 
 		this.GetChannelsList = function(){
 			socket.emit('getChannels');
@@ -536,18 +521,15 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.CreatePrivateChannel = function(data){
-			console.log('create private channel fire');
 			var user = PeopleManager.SelectedUser;
 			if(settings.login !== user){
 				var chName = [settings.login, user].sort().join('');
-				if($('.channelListItem[data-channel='+chName+']').length){
-					$('.channelListItem[data-channel='+chName+']').click();
-				} else {
+				if(!$('.channelListItem[data-channel='+chName+']').length){
 					socket.emit('createPrivateChannel',{to:user,name:chName});
 					$('#privatesRow').slideDown().append('<div class="channelListItem" data-channel="'+chName+'">'+user+'<span class="channelLeave"></span></div>');
 					$('#messages').append('<div class="channelContainer" data-channel="'+chName+'"></div>');
-					$('.channelListItem[data-channel='+chName+']').click();
 				}
+				$('.channelListItem[data-channel='+chName+']').click();
 			}
 		};
 		this.GetPrivateChannel = function(data){
@@ -558,22 +540,29 @@ $(window).on('app-ready',function(){
 		};
 		this.OnChannelSwitch = function(){
 			var currentChannel = ChannelsManager.CurrentChannel;
+			var index = ChannelsManager.TabHistory.indexOf(currentChannel);
+			if(index !== -1) ChannelsManager.TabHistory.splice(index,1);
+			ChannelsManager.TabHistory.push(currentChannel);
 			var newChannel = $(this).attr('data-channel');
-			$('div.channelContainer[data-channel='+currentChannel+']').hide();
-			$('.channelOnlineContainer[data-channel='+currentChannel+']').hide();
-			$('.currentChannel').removeClass('currentChannel activeTabItem');
-			$('div.channelContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
-			$('.channelOnlineContainer[data-channel='+newChannel+']').addClass('currentChannel').show();
-			$('.channelListItem[data-channel='+newChannel+']').addClass('currentChannel activeTabItem').removeClass('waitTabItem');
+			console.log(newChannel);
+			
+			$('*[data-channel='+currentChannel+']').removeClass('currentChannel');
+			$('.channelContainer[data-channel='+currentChannel+'],.channelOnlineContainer[data-channel='+currentChannel+']').hide();
+			
+			$('*[data-channel='+newChannel+']').addClass('currentChannel');
+			$('.channelContainer[data-channel='+newChannel+'],.channelOnlineContainer[data-channel='+newChannel+']').show();
+			
+			$('.channelListItem[data-channel='+newChannel+']').removeClass('waitTabItem');
 			ChannelsManager.CurrentChannel = newChannel;
 		};
 		this.OnChannelLeave = function(){
 			var channel = $(this).parent('.currentChannel').attr('data-channel');
-			var channelItem = $(this).parent('.currentChannel');
-			if(channelItem.next().length){
-				channelItem.next().click();
+			var THLength = ChannelsManager.TabHistory.length;
+			if(THLength){
+				var last = ChannelsManager.TabHistory[THLength-1];
+				$('.channelListItem[data-channel='+last+']').get(0).click();
 			}else{
-				channelItem.prev().click();
+				$('.channelListItem[data-channel]')[0].click();
 			}
 			$('*[data-channel='+channel+']').remove();
 			socket.emit('channelLeave',{channel:channel});
@@ -621,7 +610,7 @@ $(window).on('app-ready',function(){
 	var AuthorizationManager = function(){
 		this.SignIn = function(){
 			if(Render.GetFieldValue('passwordField') !== ''){
-				Render.FadeIn('loader');
+				$('#loader').fadeIn();
 				var password = Render.GetFieldValue('passwordField');
 				SettingsManager.SaveSetting('login',Render.GetFieldValue('loginField'));
 				SettingsManager.SaveSetting('autoLogin',$('#autoLogin').prop('checked'));
@@ -633,7 +622,7 @@ $(window).on('app-ready',function(){
 			}
 		};
 		this.SignOut = function(){
-			Render.FadeIn('overlay');
+			$('#overlay').fadeIn();
 			Render.ShowLoginPanel();
 			$('#channelsRow').children().remove();
 			$('.channelContainer').remove();
@@ -648,7 +637,7 @@ $(window).on('app-ready',function(){
 		};
 		this.OnLoginSuccess = function(data){
 			$('#userBar').html(settings.login);
-			Render.FadeOut('overlay');
+			$('#overlay').fadeOut();
 			Render.HideLoginPanel();
 			$('#serverOffline').fadeOut();
 			$('#pageContainer').fadeIn();
@@ -676,11 +665,11 @@ $(window).on('app-ready',function(){
 			Render.RenderFriends(data.friends);
 		};
 		this.OnLoginFinish = function(){
-			Render.FadeOut('loader');
+			$('#loader').fadeOut();
 		};
 		this.OnLoginError = function(error){
 			Render.ShowLoginPanel();
-			Render.FadeOut('loader');
+			$('#loader').fadeOut();
 			Render.ShowSignInStatus(error);
 		};
 	};
@@ -793,6 +782,7 @@ $(window).on('app-ready',function(){
 					console.log('transfer complete');
 					socket.emit('transferComplete');
 					Render.OtherNotification('Передача успешно завершена');
+					$('#bar').css('width','0px');
 				}
 			});
 			fileServer.on('exit',function(){
@@ -811,6 +801,7 @@ $(window).on('app-ready',function(){
 				socket.emit('transferComplete');
 				$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 				Render.OtherNotification('Передача отменена');
+				$('#bar').css('width','0px');
 			});
 		};
 		this.OnFileServerStarted = function(data){
@@ -828,14 +819,17 @@ $(window).on('app-ready',function(){
 					socket.emit('transferComplete');
 					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 					Render.OtherNotification('Передача успешно завершена');
+					$('#bar').css('width','0px');
 				}else if(message.type === 'error'){
 					console.log(message.err);
 					$('#sendFile').bind('click',FileTransferManager.SendRequest).removeClass('notActiveMenuItem');
 					Render.OtherNotification('Ошибка передачи');
+					$('#bar').css('width','0px');
 				}
 			});
 			var cleanOnCancel = function(path) {
 				Render.OtherNotification('Передача отменена');
+				$('#bar').css('width','0px');
 				fs.unlink(path,function(err){
 					if(!err){
 						console.log('clean up done');
@@ -947,7 +941,6 @@ $(window).on('app-ready',function(){
 	$('#sendFile').on('click',FileTransferManager.SendRequest);
 	$('#fileAccept').on('click',FileTransferManager.AcceptFile);
 	$('#fileCancel').on('click',FileTransferManager.CancelFile);
-	//$('#cancelTransfer').click(FileTransferManager.
 	$(document).on('click',Render.ShowContextMenu);
 	$("#messages")[0].addEventListener("drop",ChannelsManager.DropImage);
 	$(document)[0].addEventListener("drop",function (e){e.preventDefault();});
@@ -955,6 +948,6 @@ $(window).on('app-ready',function(){
 	var date = new Date();
 	var monthes = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','ноября','декабря'];
 	var weekDays = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
-	$('#calendar').html('Сегодня '+date.getDate()+' '+monthes[date.getMonth()-1]+' '+date.getFullYear()+' года.');
+	$('#calendar').html('Сегодня '+date.getDate()+' '+monthes[date.getMonth()]+' '+date.getFullYear()+' года.');
 
 });
