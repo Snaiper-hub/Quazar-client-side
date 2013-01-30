@@ -561,7 +561,7 @@ $(window).on('app-ready',function(){
 			var index = ChannelsManager.TabHistory.indexOf(channel);
 			if(index !== -1) ChannelsManager.TabHistory.splice(index,1);
 			var THLength = ChannelsManager.TabHistory.length;
-			if(THLength > 0){
+			if(THLength){
 				var last = ChannelsManager.TabHistory[THLength-1];
 				$('.channelListItem[data-channel='+last+']').click();
 			}else{
