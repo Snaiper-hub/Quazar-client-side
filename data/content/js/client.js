@@ -555,12 +555,14 @@ $(window).on('app-ready',function(){
 			$('.channelListItem[data-channel='+newChannel+']').removeClass('waitTabItem');
 			ChannelsManager.CurrentChannel = newChannel;
 		};
-		this.OnChannelLeave = function(){
+		this.OnChannelLeave = function(event){
+			//fix double click
+			event.stopPropagation();
 			var channel = $(this).parent('.currentChannel').attr('data-channel');
 			var THLength = ChannelsManager.TabHistory.length;
 			if(THLength){
 				var last = ChannelsManager.TabHistory[THLength-1];
-				$('.channelListItem[data-channel='+last+']').get(0).click();
+				$('.channelListItem[data-channel='+last+']').click();
 			}else{
 				$('.channelListItem[data-channel]')[0].click();
 			}

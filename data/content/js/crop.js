@@ -1352,9 +1352,6 @@
       }
     };
 
-    if ($.browser.msie)
-      $div.bind('selectstart', function () { return false; });
-
     $origimg.data('crop', api);
     return api;
   };
