@@ -540,11 +540,10 @@ $(window).on('app-ready',function(){
 		};
 		this.OnChannelSwitch = function(){
 			var currentChannel = ChannelsManager.CurrentChannel;
-			var index = ChannelsManager.TabHistory.indexOf(currentChannel);
-			if(index !== -1) ChannelsManager.TabHistory.splice(index,1);
-			ChannelsManager.TabHistory.push(currentChannel);
 			var newChannel = $(this).attr('data-channel');
-			console.log(newChannel);
+			var index = ChannelsManager.TabHistory.indexOf(newChannel);
+			if(index !== -1) ChannelsManager.TabHistory.splice(index,1);
+			ChannelsManager.TabHistory.push(newChannel);
 			
 			$('*[data-channel='+currentChannel+']').removeClass('currentChannel');
 			$('.channelContainer[data-channel='+currentChannel+'],.channelOnlineContainer[data-channel='+currentChannel+']').hide();
@@ -559,8 +558,10 @@ $(window).on('app-ready',function(){
 			//fix double click
 			event.stopPropagation();
 			var channel = $(this).parent('.currentChannel').attr('data-channel');
+			var index = ChannelsManager.TabHistory.indexOf(channel);
+			if(index !== -1) ChannelsManager.TabHistory.splice(index,1);
 			var THLength = ChannelsManager.TabHistory.length;
-			if(THLength){
+			if(THLength > 0){
 				var last = ChannelsManager.TabHistory[THLength-1];
 				$('.channelListItem[data-channel='+last+']').click();
 			}else{
